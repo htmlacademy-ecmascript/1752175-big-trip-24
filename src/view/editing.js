@@ -1,7 +1,7 @@
-import { createElement } from '../render.js';
 import { createEventItemTemplate, createOfferSelectorTemplate } from './helpers.js';
 import { EVENT_TYPES } from '../const.js';
 import { dateValue } from '../utils.js';
+import AbstractView from '../framework/view/abstract-view.js';
 
 function createEditingTemplate(point, allOffers, pointDestination, allDestination) {
   const { basePrice, type } = point;
@@ -88,27 +88,21 @@ function createEditingTemplate(point, allOffers, pointDestination, allDestinatio
           </form>`;
 }
 
-export default class Editing {
+export default class Editing extends AbstractView {
+  #point = null;
+  #allOffers = null;
+  #pointDestination = null;
+  #allDestination = null;
+
   constructor({ point, allOffers, pointDestination, allDestination }) {
-    this.point = point;
-    this.allOffers = allOffers;
-    this.pointDestination = pointDestination;
-    this.allDestination = allDestination;
+    super();
+    this.#point = point;
+    this.#allOffers = allOffers;
+    this.#pointDestination = pointDestination;
+    this.#allDestination = allDestination;
   }
 
-  getTemplate() {
-    return createEditingTemplate(this.point, this.allOffers, this.pointDestination, this.allDestination);
-  }
-
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
-
-    return this.element;
-  }
-
-  removeElement() {
-    this.element = null;
+  get template() {
+    return createEditingTemplate(this.#point, this.#allOffers, this.#pointDestination, this.#allDestination);
   }
 }
