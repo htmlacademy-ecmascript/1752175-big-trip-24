@@ -1,21 +1,19 @@
-function capitalizeFirstLetter(type) {
-  return type.charAt(0).toUpperCase() + type.slice(1);
-}
+import { capitalizeFirstLetter } from '../utils';
 
-function createEventItemTemplate(type) {
+function createEventItemTemplate(type, checked) {
+
   return `<div class="event__type-item">
-            <input id="event-type-${type}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${type}">
+            <input id="event-type-${type}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${type}"  ${checked ? 'checked' : ''}>
             <label class="event__type-label  event__type-label--${type}" for="event-type-${type}-1">${capitalizeFirstLetter(type)}</label>
           </div>`;
 }
 
-function createOfferSelectorTemplate(offerData) {
-  const { id, title, price, checked = false } = offerData;
+function createOfferSelectorTemplate(type, title, price, checked) {
 
   return `
     <div class="event__offer-selector">
-      <input id="event-offer-${id}-1" class="event__offer-checkbox visually-hidden" type="checkbox" name="event-offer-${id}" ${checked ? 'checked' : ''}>
-      <label class="event__offer-label" for="${id}">
+      <input id="event-offer-${type}-1" class="event__offer-checkbox visually-hidden" type="checkbox" name="event-offer-${type}" ${checked ? 'checked' : ''}>
+      <label class="event__offer-label" for="${type}">
         <span class="event__offer-title">${title}</span>
         &plus;&euro;&nbsp;
         <span class="event__offer-price">${price}</span>
