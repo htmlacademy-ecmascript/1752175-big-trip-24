@@ -10,4 +10,6 @@ const EVENT_TYPES = [
   'restaurant'
 ];
 
-export {EVENT_TYPES};
+const ZERO_LIMIT = 10;
+
+export {EVENT_TYPES, ZERO_LIMIT};

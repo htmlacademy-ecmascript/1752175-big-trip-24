@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import { ZERO_LIMIT } from './const';
 
 function capitalizeFirstLetter(type) {
   return type.charAt(0).toUpperCase() + type.slice(1);
@@ -46,7 +47,7 @@ function formatDuration(start, end) {
   const hours = Math.floor((diffInMilliseconds % millisecondsInDay) / millisecondsInHour);
   const minutes = Math.floor((diffInMilliseconds % millisecondsInHour) / millisecondsInMinute);
 
-  const formatNumber = (num) => (num < 10 ? `0${num}` : num);
+  const formatNumber = (num) => (num < ZERO_LIMIT ? `0${num}` : num);
 
   if (days > 0) {
     return `${days}D ${formatNumber(hours)}H ${formatNumber(minutes)}M`;
