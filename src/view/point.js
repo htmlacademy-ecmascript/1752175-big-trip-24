@@ -47,15 +47,29 @@ export default class Point extends AbstractView {
   #point = null;
   #offers = null;
   #destination = null;
+  #onOpenEditButtonClick = null;
 
-  constructor({point, offers, destination}) {
+  constructor({point, offers, destination, onOpenEditButtonClick}) {
     super();
     this.#point = point;
     this.#offers = offers;
     this.#destination = destination;
+    this.#onOpenEditButtonClick = onOpenEditButtonClick;
+    this.#setEventListeners();
   }
 
   get template() {
     return createPointTemplate(this.#point, this.#offers, this.#destination);
   }
+
+  #setEventListeners() {
+    this.element
+      .querySelector('.event__rollup-btn')
+      .addEventListener('click', this.#openEditButtonClickHandler);
+  }
+
+  #openEditButtonClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#onOpenEditButtonClick();
+  };
 }

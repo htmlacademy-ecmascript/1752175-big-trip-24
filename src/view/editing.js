@@ -93,16 +93,41 @@ export default class Editing extends AbstractView {
   #allOffers = null;
   #pointDestination = null;
   #allDestination = null;
+  #onCloseEditButtonClick = null;
+  #onSubmitButtonClick = null;
 
-  constructor({ point, allOffers, pointDestination, allDestination }) {
+  constructor({ point, allOffers, pointDestination, allDestination, onCloseEditButtonClick, onSubmitButtonClick }) {
     super();
     this.#point = point;
     this.#allOffers = allOffers;
     this.#pointDestination = pointDestination;
     this.#allDestination = allDestination;
+    this.#onCloseEditButtonClick = onCloseEditButtonClick;
+    this.#onSubmitButtonClick = onSubmitButtonClick;
+    this.#setEventListeners();
   }
 
   get template() {
     return createEditingTemplate(this.#point, this.#allOffers, this.#pointDestination, this.#allDestination);
   }
+
+  #setEventListeners() {
+    this.element
+      .querySelector('.event__rollup-btn')
+      .addEventListener('click', this.#closeEditButtonClickHandler);
+
+    this.element
+      .querySelector('.event__save-btn')
+      .addEventListener('click', this.#submitButtonClickHandler);
+  }
+
+  #closeEditButtonClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#onCloseEditButtonClick();
+  };
+
+  #submitButtonClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#onSubmitButtonClick();
+  };
 }
