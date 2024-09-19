@@ -1,50 +1,104 @@
-import {render} from '../render.js';
-import Creation from '../view/creation.js';
+import { render, replace } from '../framework/render.js';
 import Editing from '../view/editing.js';
 import List from '../view/list.js';
 import Point from '../view/point.js';
 import Sorting from '../view/sorting.js';
 
 export default class EventsPresenter {
-  eventsList = new List();
+  #eventsList = new List();
+  #eventsContainer = null;
+  #pointsModel = null;
+  #offersModel = null;
+  #destinationsModel = null;
+  #eventsListPoints = [];
 
-  constructor({container, pointsModel, offersModel, destinationsModel}) {
-    this.eventsContainer = container;
-    this.pointsModel = pointsModel;
-    this.offersModel = offersModel;
-    this.destinationsModel = destinationsModel;
+  constructor({ container, pointsModel, offersModel, destinationsModel }) {
+    this.#eventsContainer = container;
+    this.#pointsModel = pointsModel;
+    this.#offersModel = offersModel;
+    this.#destinationsModel = destinationsModel;
   }
 
   init() {
-    this.eventsListPoints = [...this.pointsModel.getPoints()];
+    this.#eventsListPoints = [...this.#pointsModel.getPoints()];
 
-    render(new Sorting(), this.eventsContainer);
+    render(new Sorting(), this.#eventsContainer);
 
-    render(this.eventsList, this.eventsContainer);
+    render(this.#eventsList, this.#eventsContainer);
 
-    const editingPointElement = new Editing({
-      point: this.eventsListPoints[0],
-      allOffers: this.offersModel.getOffersByType(this.eventsListPoints[0].type),
-      pointDestination: this.destinationsModel.getDestinationsById(this.eventsListPoints[0].destination),
-      allDestination: this.destinationsModel.getDestinations()
-    }).getElement();
-    this.eventsList.addItem(editingPointElement);
+    this.#eventsListPoints.forEach((point) => {
+      this.#renderEvent(point);
+    });
 
-    for (let i = 1; i < this.eventsListPoints.length - 1; i++) {
-      const pointElement = new Point({
-        point: this.eventsListPoints[i],
-        offers: [...this.offersModel.getOffersById(this.eventsListPoints[i].type, this.eventsListPoints[i].offers)],
-        destination: this.destinationsModel.getDestinationsById(this.eventsListPoints[i].destination)
-      }).getElement();
-      this.eventsList.addItem(pointElement);
+    // const creationPointElement = new Creation({
+    //   point: this.#eventsListPoints[this.#eventsListPoints.length - 1],
+    //   allOffers: this.#offersModel.getOffersByType(this.#eventsListPoints[this.#eventsListPoints.length - 1].type),
+    //   pointDestination: this.#destinationsModel.getDestinationsById(this.#eventsListPoints[this.#eventsListPoints.length - 1].destination),
+    //   allDestination: this.#destinationsModel.getDestinations()
+    // }).element;
+    // this.#eventsList.addItem(creationPointElement);
+  }
+
+  #renderEvent(point) {
+    const escKeydownHandler = (evt) => {
+      if (evt.key === 'Escape') {
+        evt.preventDefault();
+        replaceEditToEvent();
+        document.removeEventListener('keydown', escKeydownHandler);
+      }
+    };
+
+    const onOpenEditButtonClick = () => {
+      replaceEventToEdit();
+      document.addEventListener('keydown', escKeydownHandler);
+    };
+
+    const onCloseEditButtonClick = () => {
+      replaceEditToEvent();
+      document.removeEventListener('keydown', escKeydownHandler);
+    };
+
+    const onSubmitButtonClick = () => {
+      replaceEditToEvent();
+      document.removeEventListener('keydown', escKeydownHandler);
+    };
+
+    const pointComponent = new Point({
+      point,
+      offers: [...this.#offersModel.getOffersById(point.type, point.offers)],
+      destination: this.#destinationsModel.getDestinationsById(
+        point.destination
+      ),
+      onOpenEditButtonClick,
+    });
+
+    const editingPointComponent = new Editing({
+      point,
+      allOffers: this.#offersModel.getOffersByType(point.type),
+      pointDestination: this.#destinationsModel.getDestinationsById(
+        point.destination
+      ),
+      allDestination: this.#destinationsModel.getDestinations(),
+      onCloseEditButtonClick,
+      onSubmitButtonClick,
+    });
+
+    function replaceEventToEdit() {
+      replace(editingPointComponent, pointComponent);
     }
 
-    const creationPointElement = new Creation({
-      point: this.eventsListPoints[this.eventsListPoints.length - 1],
-      allOffers: this.offersModel.getOffersByType(this.eventsListPoints[this.eventsListPoints.length - 1].type),
-      pointDestination: this.destinationsModel.getDestinationsById(this.eventsListPoints[this.eventsListPoints.length - 1].destination),
-      allDestination: this.destinationsModel.getDestinations()
-    }).getElement();
-    this.eventsList.addItem(creationPointElement);
+    function replaceEditToEvent() {
+      replace(pointComponent, editingPointComponent);
+    }
+
+    this.addItem(pointComponent);
+  }
+
+  addItem(component) {
+    const list = this.#eventsList.element;
+    const li = document.createElement('li');
+    li.className = 'trip-events__item';
+    li.appendChild(component.element);
+    list.appendChild(li);
   }
 }

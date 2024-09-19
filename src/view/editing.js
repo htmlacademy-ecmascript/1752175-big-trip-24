@@ -1,7 +1,7 @@
-import { createElement } from '../render.js';
 import { createEventItemTemplate, createOfferSelectorTemplate } from './helpers.js';
 import { EVENT_TYPES } from '../const.js';
 import { dateValue } from '../utils.js';
+import AbstractView from '../framework/view/abstract-view.js';
 
 function createEditingTemplate(point, allOffers, pointDestination, allDestination) {
   const { basePrice, type } = point;
@@ -88,27 +88,46 @@ function createEditingTemplate(point, allOffers, pointDestination, allDestinatio
           </form>`;
 }
 
-export default class Editing {
-  constructor({ point, allOffers, pointDestination, allDestination }) {
-    this.point = point;
-    this.allOffers = allOffers;
-    this.pointDestination = pointDestination;
-    this.allDestination = allDestination;
+export default class Editing extends AbstractView {
+  #point = null;
+  #allOffers = null;
+  #pointDestination = null;
+  #allDestination = null;
+  #onCloseEditButtonClick = null;
+  #onSubmitButtonClick = null;
+
+  constructor({ point, allOffers, pointDestination, allDestination, onCloseEditButtonClick, onSubmitButtonClick }) {
+    super();
+    this.#point = point;
+    this.#allOffers = allOffers;
+    this.#pointDestination = pointDestination;
+    this.#allDestination = allDestination;
+    this.#onCloseEditButtonClick = onCloseEditButtonClick;
+    this.#onSubmitButtonClick = onSubmitButtonClick;
+    this.#setEventListeners();
   }
 
-  getTemplate() {
-    return createEditingTemplate(this.point, this.allOffers, this.pointDestination, this.allDestination);
+  get template() {
+    return createEditingTemplate(this.#point, this.#allOffers, this.#pointDestination, this.#allDestination);
   }
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
+  #setEventListeners() {
+    this.element
+      .querySelector('.event__rollup-btn')
+      .addEventListener('click', this.#closeEditButtonClickHandler);
 
-    return this.element;
+    this.element
+      .querySelector('.event__save-btn')
+      .addEventListener('click', this.#submitButtonClickHandler);
   }
 
-  removeElement() {
-    this.element = null;
-  }
+  #closeEditButtonClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#onCloseEditButtonClick();
+  };
+
+  #submitButtonClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#onSubmitButtonClick();
+  };
 }

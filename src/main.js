@@ -1,10 +1,10 @@
 import Info from './view/info.js';
 import Filter from './view/filter.js';
-import { render, RenderPosition } from './render.js';
 import EventsPresenter from './presenter/events-presenter.js';
 import PointsModel from './model/points-model.js';
 import OffersModel from './model/offers-model.js';
 import DestinationsModel from './model/destinations-model.js';
+import { render, RenderPosition } from './framework/render.js';
 
 const infoContainer = document.querySelector('.trip-main');
 const filterContainer = document.querySelector('.trip-controls__filters');
