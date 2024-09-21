@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { ZERO_LIMIT } from './const';
+import {FilterType, ZERO_LIMIT } from './const';
 
 function capitalizeFirstLetter(type) {
   return type.charAt(0).toUpperCase() + type.slice(1);
@@ -58,4 +58,25 @@ function formatDuration(start, end) {
   }
 }
 
-export {capitalizeFirstLetter, shufflePoints, dateValue, dateDateTime, dateContent, timeDateTime, timeContent, formatDuration};
+function isFuturePoint(point) {
+  return dayjs().isBefore(point.dateFrom, 'minute');
+}
+
+function isPresentPoint(point) {
+  return dayjs(point.dateTo) && dayjs().isAfter(dayjs(point.dateTo), 'milliseconds');
+}
+
+function isPastPoint(point) {
+  return point.dateTo && (
+    dayjs().isSame(dayjs(point.dateFrom), 'minute') || dayjs().isAfter(point.dateTo, 'minute')
+  );
+}
+
+const filter = {
+  [FilterType.EVERYTHING]: (points) => points,
+  [FilterType.FUTURE]: (points) => points.filter(isFuturePoint),
+  [FilterType.PRESENT]: (points) => points.filter(isPresentPoint),
+  [FilterType.PAST]: (points) => points.filter(isPastPoint),
+};
+
+export {capitalizeFirstLetter, shufflePoints, dateValue, dateDateTime, dateContent, timeDateTime, timeContent, formatDuration, isFuturePoint, isPresentPoint, isPastPoint, filter};

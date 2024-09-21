@@ -1,3 +1,4 @@
+import { FilterType } from '../const';
 import { capitalizeFirstLetter } from '../utils';
 
 function createEventItemTemplate(type, checked) {
@@ -22,12 +23,11 @@ function createOfferSelectorTemplate(type, title, price, checked) {
   `;
 }
 
-function createFilterItemTemplate(filterData) {
-  const { type, checked = false } = filterData;
+function createFilterItemTemplate(filter) {
 
   return `<div class="trip-filters__filter">
-            <input id="filter-${type}" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="${type}" ${checked ? 'checked' : ''}>
-            <label class="trip-filters__filter-label" for="filter-${type}">${capitalizeFirstLetter(type)}</label>
+            <input id="filter-${filter.type}" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="${filter.type}" ${filter.type === FilterType.EVERYTHING ? 'checked' : ''} ${filter.count === 0 ? 'disabled' : ''}>
+            <label class="trip-filters__filter-label" for="filter-${filter.type}">${filter.type}</label>
           </div>`;
 }
 
