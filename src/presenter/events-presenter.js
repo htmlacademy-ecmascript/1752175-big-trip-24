@@ -1,5 +1,6 @@
 import { render, replace } from '../framework/render.js';
 import Editing from '../view/editing.js';
+import EmptyList from '../view/empty-list.js';
 import List from '../view/list.js';
 import Point from '../view/point.js';
 import Sorting from '../view/sorting.js';
@@ -25,6 +26,10 @@ export default class EventsPresenter {
     render(new Sorting(), this.#eventsContainer);
 
     render(this.#eventsList, this.#eventsContainer);
+
+    if(this.#eventsListPoints.length === 0) {
+      render(new EmptyList(), this.#eventsContainer);
+    }
 
     this.#eventsListPoints.forEach((point) => {
       this.#renderEvent(point);
