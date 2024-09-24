@@ -96,14 +96,10 @@ export default class EventsPresenter {
       replace(pointComponent, editingPointComponent);
     }
 
-    this.addItem(pointComponent);
-  }
-
-  addItem(component) {
-    const list = this.#eventsList.element;
+    const listElement = this.#eventsList.element;
     const li = document.createElement('li');
     li.className = 'trip-events__item';
-    li.appendChild(component.element);
-    list.appendChild(li);
+    li.appendChild(pointComponent.element);
+    listElement.appendChild(li);
   }
 }
