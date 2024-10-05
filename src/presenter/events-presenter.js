@@ -1,41 +1,68 @@
 import { render } from '../framework/render.js';
+import { updatePoint } from '../utils.js';
 import EmptyList from '../view/empty-list.js';
 import List from '../view/list.js';
 import Sorting from '../view/sorting.js';
 import PointPresenter from './point-presenter.js';
 
 export default class EventsPresenter {
+  #container = null;
   #eventsList = new List();
-  #eventsContainer = null;
   #pointsModel = null;
   #offersModel = null;
   #destinationsModel = null;
+  #points = [];
+  #pointsPresenter = new Map();
 
   constructor({ container, pointsModel, offersModel, destinationsModel }) {
-    this.#eventsContainer = container;
+    this.#container = container;
     this.#pointsModel = pointsModel;
     this.#offersModel = offersModel;
     this.#destinationsModel = destinationsModel;
   }
 
   init() {
-    const eventsListPoints = [...this.#pointsModel.getPoints()];
+    this.#points = [...this.#pointsModel.getPoints()];
 
-    render(new Sorting(), this.#eventsContainer);
+    render(new Sorting(), this.#container);
 
-    render(this.#eventsList, this.#eventsContainer);
+    this.#renderList();
 
-    if(eventsListPoints.length === 0) {
-      render(new EmptyList(), this.#eventsContainer);
+    if(this.#points.length === 0) {
+      this.#renderEmptyList();
     } else {
-      eventsListPoints.forEach((point) => {
-        const pointPresenter = new PointPresenter({
-          offersModel: this.#offersModel,
-          destinationsModel: this.#destinationsModel,
-        });
-
-        pointPresenter.init(this.#eventsList.element, point);
-      });
+      this.#renderPoints();
     }
   }
+
+  #renderList() {
+    render(this.#eventsList, this.#container);
+  }
+
+  #renderEmptyList() {
+    render(new EmptyList(), this.#container);
+  }
+
+  #renderPoints() {
+    this.#points.forEach((point) => {
+      this.#renderPoint(point);
+    });
+  }
+
+  #renderPoint(point){
+    const pointPresenter = new PointPresenter({
+      pointListContainer: this.#eventsList.element,
+      offersModel: this.#offersModel,
+      destinationsModel: this.#destinationsModel,
+      onPointChange: this.#handleDataChange
+    });
+
+    pointPresenter.init(point);
+    this.#pointsPresenter.set(point.id, pointPresenter);
+  }
+
+  #handleDataChange = (updatedPoint) => {
+    this.#points = updatePoint(this.#points, updatedPoint);
+    this.#pointsPresenter.get(updatedPoint.id).init(updatedPoint);
+  };
 }
