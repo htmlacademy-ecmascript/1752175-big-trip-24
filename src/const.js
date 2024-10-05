@@ -19,4 +19,9 @@ const FilterType = {
   PAST: 'past'
 };
 
-export {EVENT_TYPES, ZERO_LIMIT, FilterType};
+const Mode = {
+  DEFAULT: 'DEFAULT',
+  EDITING: 'EDITING',
+};
+
+export {EVENT_TYPES, ZERO_LIMIT, FilterType, Mode};
