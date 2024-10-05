@@ -1,109 +1,73 @@
-import { render, replace } from '../framework/render.js';
-import Editing from '../view/editing.js';
+import { render } from '../framework/render.js';
+import { updatePoint } from '../utils.js';
 import EmptyList from '../view/empty-list.js';
 import List from '../view/list.js';
-import Point from '../view/point.js';
 import Sorting from '../view/sorting.js';
+import PointPresenter from './point-presenter.js';
 
 export default class EventsPresenter {
+  #container = null;
   #eventsList = new List();
-  #eventsContainer = null;
   #pointsModel = null;
   #offersModel = null;
   #destinationsModel = null;
-  #eventsListPoints = [];
+  #points = [];
+  #pointsPresenter = new Map();
 
   constructor({ container, pointsModel, offersModel, destinationsModel }) {
-    this.#eventsContainer = container;
+    this.#container = container;
     this.#pointsModel = pointsModel;
     this.#offersModel = offersModel;
     this.#destinationsModel = destinationsModel;
   }
 
   init() {
-    this.#eventsListPoints = [...this.#pointsModel.getPoints()];
+    this.#points = [...this.#pointsModel.getPoints()];
 
-    render(new Sorting(), this.#eventsContainer);
+    render(new Sorting(), this.#container);
 
-    render(this.#eventsList, this.#eventsContainer);
+    this.#renderList();
 
-    if(this.#eventsListPoints.length === 0) {
-      render(new EmptyList(), this.#eventsContainer);
+    if(this.#points.length === 0) {
+      this.#renderEmptyList();
+    } else {
+      this.#renderPoints();
     }
-
-    this.#eventsListPoints.forEach((point) => {
-      this.#renderEvent(point);
-    });
-
-    // const creationPointElement = new Creation({
-    //   point: this.#eventsListPoints[this.#eventsListPoints.length - 1],
-    //   allOffers: this.#offersModel.getOffersByType(this.#eventsListPoints[this.#eventsListPoints.length - 1].type),
-    //   pointDestination: this.#destinationsModel.getDestinationsById(this.#eventsListPoints[this.#eventsListPoints.length - 1].destination),
-    //   allDestination: this.#destinationsModel.getDestinations()
-    // }).element;
-    // this.#eventsList.addItem(creationPointElement);
   }
 
-  #renderEvent(point) {
-    const escKeydownHandler = (evt) => {
-      if (evt.key === 'Escape') {
-        evt.preventDefault();
-        replaceEditToEvent();
-        document.removeEventListener('keydown', escKeydownHandler);
-      }
-    };
-
-    const onOpenEditButtonClick = () => {
-      replaceEventToEdit();
-      document.addEventListener('keydown', escKeydownHandler);
-    };
-
-    const onCloseEditButtonClick = () => {
-      replaceEditToEvent();
-      document.removeEventListener('keydown', escKeydownHandler);
-    };
-
-    const onSubmitButtonClick = () => {
-      replaceEditToEvent();
-      document.removeEventListener('keydown', escKeydownHandler);
-    };
-
-    const pointComponent = new Point({
-      point,
-      offers: [...this.#offersModel.getOffersById(point.type, point.offers)],
-      destination: this.#destinationsModel.getDestinationsById(
-        point.destination
-      ),
-      onOpenEditButtonClick,
-    });
-
-    const editingPointComponent = new Editing({
-      point,
-      allOffers: this.#offersModel.getOffersByType(point.type),
-      pointDestination: this.#destinationsModel.getDestinationsById(
-        point.destination
-      ),
-      allDestination: this.#destinationsModel.getDestinations(),
-      onCloseEditButtonClick,
-      onSubmitButtonClick,
-    });
-
-    function replaceEventToEdit() {
-      replace(editingPointComponent, pointComponent);
-    }
-
-    function replaceEditToEvent() {
-      replace(pointComponent, editingPointComponent);
-    }
-
-    this.addItem(pointComponent);
+  #renderList() {
+    render(this.#eventsList, this.#container);
   }
 
-  addItem(component) {
-    const list = this.#eventsList.element;
-    const li = document.createElement('li');
-    li.className = 'trip-events__item';
-    li.appendChild(component.element);
-    list.appendChild(li);
+  #renderEmptyList() {
+    render(new EmptyList(), this.#container);
   }
+
+  #renderPoints() {
+    this.#points.forEach((point) => {
+      this.#renderPoint(point);
+    });
+  }
+
+  #renderPoint(point){
+    const pointPresenter = new PointPresenter({
+      pointListContainer: this.#eventsList.element,
+      offersModel: this.#offersModel,
+      destinationsModel: this.#destinationsModel,
+      onPointChange: this.#handleDataChange,
+      onModeChange: this.#handleModeChange
+    });
+
+    pointPresenter.init(point);
+    this.#pointsPresenter.set(point.id, pointPresenter);
+  }
+
+  #handleDataChange = (updatedPoint) => {
+    this.#points = updatePoint(this.#points, updatedPoint);
+    this.#pointsPresenter.get(updatedPoint.id).init(updatedPoint);
+  };
+
+  #handleModeChange = () => {
+    this.#pointsPresenter.forEach((presenter) => presenter.resetView());
+  };
 }
