@@ -2,7 +2,6 @@ import { render } from '../framework/render.js';
 import { updatePoint } from '../utils.js';
 import EmptyList from '../view/empty-list.js';
 import List from '../view/list.js';
-import Sorting from '../view/sorting.js';
 import PointPresenter from './point-presenter.js';
 
 export default class EventsPresenter {
@@ -23,8 +22,6 @@ export default class EventsPresenter {
 
   init() {
     this.#points = [...this.#pointsModel.getPoints()];
-
-    render(new Sorting(), this.#container);
 
     this.#renderList();
 
