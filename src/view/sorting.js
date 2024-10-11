@@ -7,12 +7,8 @@ function createSortingTemplate(sorting) {
 }
 
 export default class Sorting extends ItemsList {
-  constructor({ items, currentSortingType }) {
-    super({ items });
-    this._currentSortingType = currentSortingType;
-  }
 
   get template() {
-    return createSortingTemplate(this._items, this._currentSortingType);
+    return createSortingTemplate(this._items);
   }
 }

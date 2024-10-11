@@ -26,7 +26,7 @@ function createOfferSelectorTemplate(type, title, price, checked) {
 function createFilterItemTemplate(filter, isChecked, isDisabled) {
 
   return `<div class="trip-filters__filter">
-            <input id="filter-${filter.type}" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="${filter.type}" ${isChecked ? 'checked' : ''} ${isDisabled ? 'disabled' : ''}>
+            <input id="filter-${filter.type}" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" data-item="${filter.type}" value="${filter.type}" ${isChecked ? 'checked' : ''} ${isDisabled ? 'disabled' : ''}>
             <label class="trip-filters__filter-label" for="filter-${filter.type}">${filter.type}</label>
           </div>`;
 }
@@ -34,7 +34,7 @@ function createFilterItemTemplate(filter, isChecked, isDisabled) {
 function createSortingItemTemplate(sorting, isChecked, isDisabled) {
 
   return `<div class="trip-sort__item  trip-sort__item--${sorting.type}">
-            <input id="sort-${sorting.type}" class="trip-sort__input  visually-hidden" type="radio" name="trip-sort" value="sort-${sorting.type}" ${isChecked ? 'checked' : ''} ${isDisabled ? 'disabled' : ''}>
+            <input id="sort-${sorting.type}" class="trip-sort__input  visually-hidden" type="radio" name="trip-sort" data-item="${sorting.type}" value="sort-${sorting.type}" ${isChecked ? 'checked' : ''} ${isDisabled ? 'disabled' : ''}>
             <label class="trip-sort__btn" for="sort-${sorting.type}">${capitalizeFirstLetter(sorting.type)}</label>
           </div>`;
 }
