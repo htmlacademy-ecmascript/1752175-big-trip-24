@@ -1,4 +1,3 @@
-import { FilterType } from '../const';
 import { capitalizeFirstLetter } from '../utils';
 
 function createEventItemTemplate(type, checked) {
