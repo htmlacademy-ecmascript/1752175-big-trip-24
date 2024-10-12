@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import {FilterType, ZERO_LIMIT } from './const';
+import {FilterType, SortingType, ZERO_LIMIT } from './const';
 
 function capitalizeFirstLetter(type) {
   return type.charAt(0).toUpperCase() + type.slice(1);
@@ -81,4 +81,32 @@ const filter = {
 
 const updatePoint = (points, updatedPoint) => points.map((point) => (point.id === updatedPoint.id ? updatedPoint : point));
 
-export {capitalizeFirstLetter, shufflePoints, dateValue, dateDateTime, dateContent, timeDateTime, timeContent, formatDuration, isFuturePoint, isPresentPoint, isPastPoint, filter, updatePoint};
+function sortPointsByDay(points) {
+  return points.toSorted((a, b) => dayjs(a.dateFrom).diff(dayjs(b.dateFrom)));
+}
+
+function sortPointsByTime(points) {
+  return points.toSorted((a, b) => {
+    const durationA = dayjs(a.dateTo).diff(dayjs(a.dateFrom));
+    const durationB = dayjs(b.dateTo).diff(dayjs(b.dateFrom));
+    return durationA - durationB;
+  });
+}
+
+function sortPointsByPrice(points) {
+  return points.toSorted((a, b) => a.basePrice - b.basePrice);
+}
+
+const sorting = {
+  [SortingType.DAY]: (points) => sortPointsByDay(points),
+  [SortingType.EVENT]: () => {
+    throw new Error(`Sort by ${SortingType.EVENT} is disabled`);
+  },
+  [SortingType.TIME]: (points) => sortPointsByTime(points),
+  [SortingType.PRICE]: (points) => sortPointsByPrice(points),
+  [SortingType.OFFER]: () => {
+    throw new Error(`Sort by ${SortingType.OFFER} is disabled`);
+  },
+};
+
+export {capitalizeFirstLetter, shufflePoints, dateValue, dateDateTime, dateContent, timeDateTime, timeContent, formatDuration, isFuturePoint, isPresentPoint, isPastPoint, filter, updatePoint, sorting};

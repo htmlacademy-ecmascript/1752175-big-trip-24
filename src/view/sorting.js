@@ -1,20 +1,14 @@
-import AbstractView from '../framework/view/abstract-view.js';
 import { createSortingItemTemplate } from './helpers.js';
+import ItemsList from './items-list.js';
 
-const SORTING_ITEMS = [
-  { type: 'day', checked: true},
-  { type: 'event', disabled: true},
-  { type: 'time'},
-  { type: 'price'},
-  { type: 'offer', disabled: true},
-];
 
-function createSortingTemplate() {
-  return `<form class="trip-events__trip-sort  trip-sort" action="#" method="get">${SORTING_ITEMS.map((type) => createSortingItemTemplate(type)).join('')}</form>`;
+function createSortingTemplate(sorting) {
+  return `<form class="trip-events__trip-sort  trip-sort" action="#" method="get">${sorting.map((item) => createSortingItemTemplate(item, item.isChecked, item.isDisabled)).join('')}</form>`;
 }
 
-export default class Sorting extends AbstractView {
+export default class Sorting extends ItemsList {
+
   get template() {
-    return createSortingTemplate();
+    return createSortingTemplate(this._items);
   }
 }

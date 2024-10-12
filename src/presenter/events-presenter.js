@@ -1,9 +1,10 @@
+import { SortingType } from '../const.js';
 import { render } from '../framework/render.js';
-import { updatePoint } from '../utils.js';
+import { sorting, updatePoint } from '../utils.js';
 import EmptyList from '../view/empty-list.js';
 import List from '../view/list.js';
-import Sorting from '../view/sorting.js';
 import PointPresenter from './point-presenter.js';
+import SortingPresenter from './sorting-presenter.js';
 
 export default class EventsPresenter {
   #container = null;
@@ -13,6 +14,8 @@ export default class EventsPresenter {
   #destinationsModel = null;
   #points = [];
   #pointsPresenter = new Map();
+  #currentSortingType = null;
+  #defaultSortingType = SortingType.DAY;
 
   constructor({ container, pointsModel, offersModel, destinationsModel }) {
     this.#container = container;
@@ -24,19 +27,18 @@ export default class EventsPresenter {
   init() {
     this.#points = [...this.#pointsModel.getPoints()];
 
-    render(new Sorting(), this.#container);
-
-    this.#renderList();
-
-    if(this.#points.length === 0) {
+    if (!this.#points.length) {
       this.#renderEmptyList();
-    } else {
-      this.#renderPoints();
+      return;
     }
+
+    this.#renderSort();
+    this.#renderList();
   }
 
   #renderList() {
     render(this.#eventsList, this.#container);
+    this.#sortingTypesChangeHandler(this.#defaultSortingType);
   }
 
   #renderEmptyList() {
@@ -69,5 +71,30 @@ export default class EventsPresenter {
 
   #handleModeChange = () => {
     this.#pointsPresenter.forEach((presenter) => presenter.resetView());
+  };
+
+  #renderSort() {
+    const sortingPresenter = new SortingPresenter({
+      container: this.#container,
+      onSortTypeChange: this.#sortingTypesChangeHandler
+    });
+
+    sortingPresenter.init();
+  }
+
+  #sortingPoints = (sortingType) => {
+    this.#currentSortingType = sortingType;
+    this.#points = sorting[this.#currentSortingType](this.#points);
+  };
+
+  #clearPoints = () => {
+    this.#pointsPresenter.forEach((presenter) => presenter.destroy());
+    this.#pointsPresenter.clear();
+  };
+
+  #sortingTypesChangeHandler = (sortingType) => {
+    this.#sortingPoints(sortingType);
+    this.#clearPoints();
+    this.#renderPoints();
   };
 }
