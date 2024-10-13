@@ -2,6 +2,9 @@ import { createEventItemTemplate, createOfferSelectorTemplate } from './helpers.
 import { EVENT_TYPES } from '../const.js';
 import { dateValue } from '../utils.js';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
+import flatpickr from 'flatpickr';
+
+import 'flatpickr/dist/flatpickr.min.css';
 
 function createEditingTemplate(state, allDestinations) {
   const { basePrice, type, offers, typeOffers, destination, dateTo, dateFrom } = state;
@@ -106,6 +109,8 @@ export default class Editing extends AbstractStatefulView {
   #allDestinations = [];
   #onCloseClick = null;
   #onSubmitClick = null;
+  #datepickerStart = null;
+  #datepickerEnd = null;
 
   constructor({
     point,
@@ -139,6 +144,11 @@ export default class Editing extends AbstractStatefulView {
 
   removeElement = () => {
     super.removeElement();
+
+    this.#datepickerStart?.destroy();
+    this.#datepickerEnd?.destroy();
+    this.#datepickerStart = null;
+    this.#datepickerEnd = null;
   };
 
 
@@ -157,6 +167,9 @@ export default class Editing extends AbstractStatefulView {
 
     this.element.querySelector('.event__input--price')
       .addEventListener('change', this.#priceChangeHandler);
+
+    this.#setDatepickerStart();
+    this.#setDatepickerEnd();
   };
 
   #closeClickHandler = (evt) => {
@@ -196,6 +209,49 @@ export default class Editing extends AbstractStatefulView {
     });
   };
 
+  #dateFromChangeHandler = ([userDate]) => {
+    this._setState({
+      dateFrom: userDate,
+    });
+  };
+
+  #dateToChangeHandler = ([userDate]) => {
+    this._setState({
+      dateTo: userDate,
+    });
+  };
+
+  #initializeDatepicker(selector, defaultDate, onChange, minDate) {
+    return flatpickr(
+      this.element.querySelector(selector),
+      {
+        enableTime: true,
+        dateFormat: 'd/m/y H:i',
+        'time_24hr': true,
+        defaultDate,
+        onChange,
+        ...(minDate ? { minDate } : {}),
+      }
+    );
+  }
+
+  #setDatepickerStart() {
+    this.#datepickerStart = this.#initializeDatepicker(
+      '#event-start-time-1',
+      this._state.dateFrom,
+      this.#dateFromChangeHandler
+    );
+  }
+
+  #setDatepickerEnd() {
+    this.#datepickerEnd = this.#initializeDatepicker(
+      '#event-end-time-1',
+      this._state.dateTo,
+      this.#dateToChangeHandler,
+      this._state.dateFrom
+    );
+  }
+
   static parsePointToState(point, pointDestination, typeOffers) {
     return {
       ...point,
@@ -205,8 +261,6 @@ export default class Editing extends AbstractStatefulView {
   }
 
   static parseStateToPoint(state) {
-    const point = {...state};
-
-    return point;
+    return {...state};
   }
 }
