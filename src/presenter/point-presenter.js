@@ -39,11 +39,12 @@ export default class PointPresenter {
 
     this.#editingComponent = new Editing({
       point: this.#point,
-      allOffers: this.#offersModel.getOffersByType(point.type),
+      allOffers: this.#offersModel.offers,
+      typeOffers: this.#offersModel.getOffersByType(point.type),
+      allDestinations: this.#destinationsModel.destinations,
       pointDestination: this.#destinationsModel.getDestinationsById(point.destination),
-      allDestination: this.#destinationsModel.getDestinations(),
-      onCloseEditButtonClick: this.#pointCloseHandler,
-      onSubmitButtonClick: this.#pointSubmitHandler
+      onCloseClick: this.#pointCloseHandler,
+      onSubmitClick: this.#pointSubmitHandler
     });
 
     if (!prevPointComponent || !prevPointEditingComponent) {
