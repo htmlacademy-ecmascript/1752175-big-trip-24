@@ -40,4 +40,16 @@ const Mode = {
   EDITING: 'EDITING',
 };
 
-export {EVENT_TYPES, ZERO_LIMIT, FilterType, Mode, SortingType, disabledSortingType};
+const UpdateType = {
+  PATCH: 'PATCH',
+  MINOR: 'MINOR',
+  MAJOR: 'MAJOR',
+};
+
+const UserAction = {
+  UPDATE_POINT: 'UPDATE_POINT',
+  DELETE_POINT: 'DELETE_POINT',
+  CREATE_POINT: 'CREATE_POINT',
+};
+
+export {EVENT_TYPES, ZERO_LIMIT, FilterType, Mode, SortingType, disabledSortingType, UpdateType, UserAction};

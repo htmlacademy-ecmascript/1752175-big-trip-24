@@ -1,4 +1,4 @@
-import { Mode } from '../const';
+import { Mode, UpdateType, UserAction } from '../const';
 import { remove, render, replace } from '../framework/render';
 import Editing from '../view/editing';
 import Point from '../view/point';
@@ -39,9 +39,9 @@ export default class PointPresenter {
 
     this.#editingComponent = new Editing({
       point: this.#point,
-      allOffers: this.#offersModel.offers,
+      allOffers: this.#offersModel.getOffers(),
       typeOffers: this.#offersModel.getOffersByType(point.type),
-      allDestinations: this.#destinationsModel.destinations,
+      allDestinations: this.#destinationsModel.getDestinations(),
       pointDestination: this.#destinationsModel.getDestinationsById(point.destination),
       onCloseClick: this.#pointCloseHandler,
       onSubmitClick: this.#pointSubmitHandler
