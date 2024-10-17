@@ -1,5 +1,6 @@
 import { Mode, UpdateType, UserAction } from '../const';
 import { remove, render, replace } from '../framework/render';
+import { isMinorChange } from '../utils';
 import Editing from '../view/editing';
 import Point from '../view/point';
 
@@ -44,7 +45,8 @@ export default class PointPresenter {
       allDestinations: this.#destinationsModel.getDestinations(),
       pointDestination: this.#destinationsModel.getDestinationsById(point.destination),
       onCloseClick: this.#pointCloseHandler,
-      onSubmitClick: this.#pointSubmitHandler
+      onSubmitClick: this.#pointSubmitHandler,
+      onDeleteClick: this.#deleteClickHandler,
     });
 
     if (!prevPointComponent || !prevPointEditingComponent) {
@@ -100,15 +102,21 @@ export default class PointPresenter {
   };
 
   #pointSubmitHandler = (point) => {
-    this.#handleDataChange(point);
+    const currentType = isMinorChange(point, this.#point) ? UpdateType.MINOR : UpdateType.PATCH;
+    this.#handleDataChange(UserAction.UPDATE_POINT, currentType, point);
     this.#replaceEditToPoint();
   };
 
   #pointCloseHandler = () => {
+    this.#editingComponent.reset(this.#point);
     this.#replaceEditToPoint();
   };
 
   #favoriteClickHandler = () => {
-    this.#handleDataChange({...this.#point, isFavorite: !this.#point.isFavorite });
+    this.#handleDataChange(UserAction.UPDATE_POINT, UpdateType.PATCH, {...this.#point, isFavorite: !this.#point.isFavorite });
+  };
+
+  #deleteClickHandler = (point) => {
+    this.#handleDataChange(UserAction.DELETE_POINT, UpdateType.MINOR, point);
   };
 }

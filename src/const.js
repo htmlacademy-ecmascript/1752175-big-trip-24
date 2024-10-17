@@ -52,4 +52,11 @@ const UserAction = {
   CREATE_POINT: 'CREATE_POINT',
 };
 
-export {EVENT_TYPES, ZERO_LIMIT, FilterType, Mode, SortingType, disabledSortingType, UpdateType, UserAction};
+const EmptyListMessage = {
+  EVERYTHING : 'Click New Event to create your first point',
+  FUTURE : 'There are no future events now',
+  PRESENT : 'There are no present events now',
+  PAST : 'There are no past events now',
+};
+
+export {EVENT_TYPES, ZERO_LIMIT, FilterType, Mode, SortingType, disabledSortingType, UpdateType, UserAction, EmptyListMessage };

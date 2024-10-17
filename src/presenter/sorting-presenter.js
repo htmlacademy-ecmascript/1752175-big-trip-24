@@ -1,28 +1,43 @@
 import { disabledSortingType, SortingType } from '../const';
-import { render } from '../framework/render';
+import { remove, render, replace } from '../framework/render';
 import Sorting from '../view/sorting';
 
 export default class SortingPresenter {
   #container = null;
+  #sortingComponent = null;
   #sortingTypes = [];
-  #defaultSortingType = SortingType.DAY;
+  #currentSortingType = SortingType.DAY;
   #sortingTypesChangeHandler = null;
 
   constructor({container, onSortTypeChange}) {
     this.#container = container;
-    this.#sortingTypesChangeHandler = onSortTypeChange;
 
     this.#sortingTypes = Object.values(SortingType).map((type) => ({
       type,
-      isChecked: (type === this.#defaultSortingType),
+      isChecked: (type === this.#currentSortingType),
       isDisabled: !disabledSortingType[type],
     }));
+
+    this.#sortingTypesChangeHandler = onSortTypeChange;
   }
 
   init() {
-    render(new Sorting({
+    const prevSortingComponent = this.#sortingComponent;
+
+    this.#sortingComponent = new Sorting({
       items: this.#sortingTypes,
       onItemChange: this.#sortingTypesChangeHandler
-    }), this.#container);
+    });
+
+    if (prevSortingComponent) {
+      replace(this.#sortingComponent, prevSortingComponent);
+      remove(prevSortingComponent);
+    } else {
+      render(this.#sortingComponent, this.#container);
+    }
+  }
+
+  destroy() {
+    remove(this.#sortingComponent);
   }
 }

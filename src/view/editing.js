@@ -15,7 +15,7 @@ function createEditingTemplate(state, allDestinations) {
       return createEventItemTemplate(eventType, checked);
     }).join('');
 
-  const createAllOffers = typeOffers.offers
+  const createAllOffers = (typeOffers?.offers || [])
     .map((offer) => {
       const checked = offers.includes(offer.id);
       return createOfferSelectorTemplate(type, offer.title, offer.price, offer.id, checked);
@@ -111,15 +111,17 @@ export default class Editing extends AbstractStatefulView {
   #onSubmitClick = null;
   #datepickerStart = null;
   #datepickerEnd = null;
+  #onDeleteClick = null;
 
   constructor({
     point,
     typeOffers,
     allOffers,
-    pointDestination,
+    pointDestination = false,
     allDestinations,
     onCloseClick,
-    onSubmitClick
+    onSubmitClick,
+    onDeleteClick,
   }) {
     super();
     this.#initialPoint = point;
@@ -127,6 +129,7 @@ export default class Editing extends AbstractStatefulView {
     this.#allDestinations = allDestinations;
     this.#onCloseClick = onCloseClick;
     this.#onSubmitClick = onSubmitClick;
+    this.#onDeleteClick = onDeleteClick;
     this._setState(Editing.parsePointToState(point, pointDestination.id, typeOffers));
     this._restoreHandlers();
   }
@@ -153,6 +156,9 @@ export default class Editing extends AbstractStatefulView {
 
 
   _restoreHandlers = () => {
+    this.element.querySelector('.event__reset-btn')
+      .addEventListener('click', this.#deleteClickHandler);
+
     this.element.querySelector('.event__rollup-btn')
       .addEventListener('click', this.#closeClickHandler);
 
@@ -179,7 +185,12 @@ export default class Editing extends AbstractStatefulView {
 
   #submitClickHandler = (evt) => {
     evt.preventDefault();
-    this.#onSubmitClick(Editing.parseStateToPoint(this.#initialPoint));
+    this.#onSubmitClick(Editing.parseStateToPoint(this._state));
+  };
+
+  #deleteClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#onDeleteClick(Editing.parseStateToPoint(this.#initialPoint));
   };
 
   #typeChangeHandler = (evt) => {
@@ -213,6 +224,8 @@ export default class Editing extends AbstractStatefulView {
     this._setState({
       dateFrom: userDate,
     });
+
+    this.#setDatepickerEnd();
   };
 
   #dateToChangeHandler = ([userDate]) => {
