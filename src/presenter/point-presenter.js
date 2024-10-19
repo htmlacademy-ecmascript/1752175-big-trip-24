@@ -1,4 +1,4 @@
-import { Mode, UpdateType, UserAction } from '../const';
+import {Mode, UpdateType, UserAction } from '../const';
 import { remove, render, replace } from '../framework/render';
 import { isMinorChange } from '../utils';
 import Editing from '../view/editing';
@@ -33,7 +33,7 @@ export default class PointPresenter {
     this.#pointComponent = new Point({
       point: this.#point,
       offers: [...this.#offersModel.getOffersById(point.type, point.offers)],
-      destination: this.#destinationsModel.getDestinationsById(point.destination),
+      destination: this.#destinationsModel.getDestinationsById(point.destination) || {},
       onOpenEditButtonClick: this.#pointEditHandler,
       onFavoriteButtonClick: this.#favoriteClickHandler
     });
@@ -68,6 +68,7 @@ export default class PointPresenter {
 
   resetView() {
     if(this.#mode !== Mode.DEFAULT) {
+      this.#editingComponent.reset(this.#point);
       this.#replaceEditToPoint();
     }
   }
@@ -80,14 +81,16 @@ export default class PointPresenter {
   #escKeydownHandler = (evt) => {
     if (evt.key === 'Escape') {
       evt.preventDefault();
+      this.#editingComponent.reset();
       this.#replaceEditToPoint();
+      document.removeEventListener('keydown', this.#escKeydownHandler);
     }
   };
 
   #replacePointToEdit() {
+    this.#handleModeChange();
     replace(this.#editingComponent, this.#pointComponent);
     document.addEventListener('keydown', this.#escKeydownHandler);
-    this.#handleModeChange();
     this.#mode = Mode.EDITING;
   }
 
@@ -98,6 +101,7 @@ export default class PointPresenter {
   }
 
   #pointEditHandler = () => {
+    this.#handleModeChange();
     this.#replacePointToEdit();
   };
 

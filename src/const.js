@@ -1,3 +1,5 @@
+import dayjs from 'dayjs';
+
 const EVENT_TYPES = [
   'taxi',
   'bus',
@@ -9,6 +11,19 @@ const EVENT_TYPES = [
   'sightseeing',
   'restaurant'
 ];
+
+const DEFAULT_EVENT_TYPE = 'flight';
+
+const POINT_EMPTY = {
+  id: '0',
+  basePrice: 0,
+  dateFrom: dayjs(new Date()).toISOString(),
+  dateTo: dayjs(new Date()).toISOString(),
+  destination: '0',
+  isFavorite: false,
+  offers: [],
+  type: DEFAULT_EVENT_TYPE,
+};
 
 const ZERO_LIMIT = 10;
 
@@ -46,6 +61,11 @@ const UpdateType = {
   MAJOR: 'MAJOR',
 };
 
+const EditType = {
+  EDITING: 'EDITING',
+  CREATING: 'CREATING',
+};
+
 const UserAction = {
   UPDATE_POINT: 'UPDATE_POINT',
   DELETE_POINT: 'DELETE_POINT',
@@ -59,4 +79,4 @@ const EmptyListMessage = {
   PAST : 'There are no past events now',
 };
 
-export {EVENT_TYPES, ZERO_LIMIT, FilterType, Mode, SortingType, disabledSortingType, UpdateType, UserAction, EmptyListMessage };
+export {EVENT_TYPES, DEFAULT_EVENT_TYPE, POINT_EMPTY, ZERO_LIMIT, FilterType, Mode, SortingType, disabledSortingType, UpdateType, EditType, UserAction, EmptyListMessage};
