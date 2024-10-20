@@ -63,7 +63,11 @@ function isFuturePoint(point) {
 }
 
 function isPresentPoint(point) {
-  return dayjs(point.dateTo) && dayjs().isAfter(dayjs(point.dateTo), 'milliseconds');
+  const currentTime = dayjs();
+  const dateFrom = dayjs(point.dateFrom);
+  const dateTo = dayjs(point.dateTo);
+
+  return dateFrom.isValid() && dateFrom.isBefore(currentTime) && dateTo.isValid() && dateTo.isAfter(currentTime);
 }
 
 function isPastPoint(point) {
@@ -89,12 +93,20 @@ function sortPointsByTime(points) {
   return points.toSorted((a, b) => {
     const durationA = dayjs(a.dateTo).diff(dayjs(a.dateFrom));
     const durationB = dayjs(b.dateTo).diff(dayjs(b.dateFrom));
-    return durationA - durationB;
+    return durationB - durationA;
   });
 }
 
 function sortPointsByPrice(points) {
-  return points.toSorted((a, b) => a.basePrice - b.basePrice);
+  return points.toSorted((a, b) => b.basePrice - a.basePrice);
+}
+
+function generateId() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const random = Math.random() * 16 | 0;
+    const value = c === 'x' ? random : (random & 0x3 | 0x8);
+    return value.toString(16);
+  });
 }
 
 const sorting = {
@@ -109,4 +121,9 @@ const sorting = {
   },
 };
 
-export {capitalizeFirstLetter, shufflePoints, dateValue, dateDateTime, dateContent, timeDateTime, timeContent, formatDuration, isFuturePoint, isPresentPoint, isPastPoint, filter, updatePoint, sorting};
+const isMinorChange = (pointA, pointB) =>
+  pointA.dateFrom !== pointB.dateFrom
+  || pointA.dateTo !== pointB.dateTo
+  || pointA.basePrice !== pointB.basePrice;
+
+export {capitalizeFirstLetter, shufflePoints, dateValue, dateDateTime, dateContent, timeDateTime, timeContent, formatDuration, isFuturePoint, isPresentPoint, isPastPoint, filter, updatePoint, sorting, isMinorChange, generateId};

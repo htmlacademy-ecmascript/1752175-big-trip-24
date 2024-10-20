@@ -1,8 +1,9 @@
-import { SortingType } from '../const.js';
-import { render } from '../framework/render.js';
-import { sorting, updatePoint } from '../utils.js';
+import { FilterType, SortingType, UpdateType, UserAction } from '../const.js';
+import { remove, render } from '../framework/render.js';
+import { filter, sorting } from '../utils.js';
 import EmptyList from '../view/empty-list.js';
 import List from '../view/list.js';
+import NewPointPresenter from './new-point-presenter.js';
 import PointPresenter from './point-presenter.js';
 import SortingPresenter from './sorting-presenter.js';
 
@@ -12,43 +13,70 @@ export default class EventsPresenter {
   #pointsModel = null;
   #offersModel = null;
   #destinationsModel = null;
-  #points = [];
+  #filterModel = null;
   #pointsPresenter = new Map();
-  #currentSortingType = null;
-  #defaultSortingType = SortingType.DAY;
+  #emptyListComponent = null;
+  #sortingPresenter = null;
+  #currentSortingType = SortingType.DAY;
+  #newPointPresenter = null;
+  #newPointButtonPresenter = null;
+  #isCreating = false;
 
-  constructor({ container, pointsModel, offersModel, destinationsModel }) {
+  constructor({ container, pointsModel, offersModel, destinationsModel, filterModel, newPointButtonPresenter }) {
     this.#container = container;
     this.#pointsModel = pointsModel;
     this.#offersModel = offersModel;
     this.#destinationsModel = destinationsModel;
+    this.#filterModel = filterModel;
+    this.#newPointButtonPresenter = newPointButtonPresenter;
+
+    this.#pointsModel.addObserver(this.#modelEventHandler);
+    this.#filterModel.addObserver(this.#modelEventHandler);
+
+    this.#newPointPresenter = new NewPointPresenter({
+      container: this.#eventsList.element,
+      destinationsModel: this.#destinationsModel,
+      offersModel: this.#offersModel,
+      onPointChange: this.#handleViewAction,
+      onDestroy:  this.#newPointDestroyHandler,
+    });
+  }
+
+  get points() {
+    const filterType = this.#filterModel.getFilter();
+    const filteredPoints = filter[filterType](this.#pointsModel.getPoints());
+    return sorting[this.#currentSortingType]([...filteredPoints]);
   }
 
   init() {
-    this.#points = [...this.#pointsModel.getPoints()];
+    this.#renderEvents();
+  }
 
-    if (!this.#points.length) {
+  #renderEvents() {
+    if (this.points.length === 0 && !this.#isCreating) {
       this.#renderEmptyList();
       return;
     }
 
     this.#renderSort();
     this.#renderList();
+    this.#renderPoints();
   }
 
   #renderList() {
     render(this.#eventsList, this.#container);
-    this.#sortingTypesChangeHandler(this.#defaultSortingType);
   }
 
   #renderEmptyList() {
-    render(new EmptyList(), this.#container);
+    this.#emptyListComponent = new EmptyList({
+      filterType: this.#filterModel.getFilter()
+    });
+
+    render(this.#emptyListComponent, this.#container);
   }
 
   #renderPoints() {
-    this.#points.forEach((point) => {
-      this.#renderPoint(point);
-    });
+    this.points.forEach((point) => this.#renderPoint(point));
   }
 
   #renderPoint(point){
@@ -56,45 +84,96 @@ export default class EventsPresenter {
       pointListContainer: this.#eventsList.element,
       offersModel: this.#offersModel,
       destinationsModel: this.#destinationsModel,
-      onPointChange: this.#handleDataChange,
-      onModeChange: this.#handleModeChange
+      onPointChange: this.#handleViewAction,
+      onModeChange: this.#handleModeChange,
     });
 
     pointPresenter.init(point);
     this.#pointsPresenter.set(point.id, pointPresenter);
   }
 
-  #handleDataChange = (updatedPoint) => {
-    this.#points = updatePoint(this.#points, updatedPoint);
-    this.#pointsPresenter.get(updatedPoint.id).init(updatedPoint);
+  #handleViewAction = (actionType, updateType, updatedPoint) => {
+    if(actionType === UserAction.UPDATE_POINT) {
+      this.#pointsModel.updatePoint(updateType, updatedPoint);
+    }
+
+    if(actionType === UserAction.CREATE_POINT) {
+      this.#pointsModel.addPoint(updateType, updatedPoint);
+    }
+
+    if(actionType === UserAction.DELETE_POINT) {
+      this.#pointsModel.deletePoint(updateType, updatedPoint);
+    }
   };
 
   #handleModeChange = () => {
+    this.#newPointPresenter.destroy();
     this.#pointsPresenter.forEach((presenter) => presenter.resetView());
   };
 
   #renderSort() {
-    const sortingPresenter = new SortingPresenter({
+    this.#sortingPresenter = new SortingPresenter({
       container: this.#container,
       onSortTypeChange: this.#sortingTypesChangeHandler
     });
 
-    sortingPresenter.init();
+    this.#sortingPresenter.init();
   }
-
-  #sortingPoints = (sortingType) => {
-    this.#currentSortingType = sortingType;
-    this.#points = sorting[this.#currentSortingType](this.#points);
-  };
 
   #clearPoints = () => {
     this.#pointsPresenter.forEach((presenter) => presenter.destroy());
     this.#pointsPresenter.clear();
   };
 
+  #clearEvents = ({resetSortType = false} = {}) => {
+    this.#clearPoints();
+    this.#sortingPresenter.destroy();
+    remove(this.#emptyListComponent);
+
+    if(resetSortType) {
+      this.#currentSortingType = SortingType.DAY;
+    }
+  };
+
+  #modelEventHandler = (updateType, data) => {
+    if(updateType === UpdateType.PATCH) {
+      this.#pointsPresenter?.get(data.id)?.init(data);
+    }
+
+    if(updateType === UpdateType.MINOR) {
+      this.#clearEvents();
+      this.#renderEvents();
+    }
+
+    if(updateType === UpdateType.MAJOR) {
+      this.#clearEvents({resetSortType: true});
+      this.#renderEvents();
+    }
+  };
+
   #sortingTypesChangeHandler = (sortingType) => {
-    this.#sortingPoints(sortingType);
+    this.#currentSortingType = sortingType;
     this.#clearPoints();
     this.#renderPoints();
+  };
+
+  newPointButtonClickHandler = () => {
+    this.#isCreating = true;
+    this.#currentSortingType = SortingType.DAY;
+    this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
+    this.#newPointButtonPresenter.disableButton();
+
+    this.#pointsPresenter.forEach((presenter) => presenter.resetView());
+
+    this.#newPointPresenter.init();
+  };
+
+  #newPointDestroyHandler = ({isCanceled}) => {
+    this.#isCreating = false;
+    this.#newPointButtonPresenter.enableButton();
+    if (this.points.length === 0 && isCanceled) {
+      this.#clearEvents();
+      this.#renderEvents();
+    }
   };
 }

@@ -1,5 +1,6 @@
-import { Mode } from '../const';
+import {Mode, UpdateType, UserAction } from '../const';
 import { remove, render, replace } from '../framework/render';
+import { isMinorChange } from '../utils';
 import Editing from '../view/editing';
 import Point from '../view/point';
 
@@ -39,12 +40,13 @@ export default class PointPresenter {
 
     this.#editingComponent = new Editing({
       point: this.#point,
-      allOffers: this.#offersModel.offers,
+      allOffers: this.#offersModel.getOffers(),
       typeOffers: this.#offersModel.getOffersByType(point.type),
-      allDestinations: this.#destinationsModel.destinations,
+      allDestinations: this.#destinationsModel.getDestinations(),
       pointDestination: this.#destinationsModel.getDestinationsById(point.destination),
       onCloseClick: this.#pointCloseHandler,
-      onSubmitClick: this.#pointSubmitHandler
+      onSubmitClick: this.#pointSubmitHandler,
+      onDeleteClick: this.#deleteClickHandler,
     });
 
     if (!prevPointComponent || !prevPointEditingComponent) {
@@ -66,6 +68,7 @@ export default class PointPresenter {
 
   resetView() {
     if(this.#mode !== Mode.DEFAULT) {
+      this.#editingComponent.reset(this.#point);
       this.#replaceEditToPoint();
     }
   }
@@ -78,14 +81,16 @@ export default class PointPresenter {
   #escKeydownHandler = (evt) => {
     if (evt.key === 'Escape') {
       evt.preventDefault();
+      this.#editingComponent.reset();
       this.#replaceEditToPoint();
+      document.removeEventListener('keydown', this.#escKeydownHandler);
     }
   };
 
   #replacePointToEdit() {
+    this.#handleModeChange();
     replace(this.#editingComponent, this.#pointComponent);
     document.addEventListener('keydown', this.#escKeydownHandler);
-    this.#handleModeChange();
     this.#mode = Mode.EDITING;
   }
 
@@ -96,19 +101,26 @@ export default class PointPresenter {
   }
 
   #pointEditHandler = () => {
+    this.#handleModeChange();
     this.#replacePointToEdit();
   };
 
   #pointSubmitHandler = (point) => {
-    this.#handleDataChange(point);
+    const currentType = isMinorChange(point, this.#point) ? UpdateType.MINOR : UpdateType.PATCH;
+    this.#handleDataChange(UserAction.UPDATE_POINT, currentType, point);
     this.#replaceEditToPoint();
   };
 
   #pointCloseHandler = () => {
+    this.#editingComponent.reset(this.#point);
     this.#replaceEditToPoint();
   };
 
   #favoriteClickHandler = () => {
-    this.#handleDataChange({...this.#point, isFavorite: !this.#point.isFavorite });
+    this.#handleDataChange(UserAction.UPDATE_POINT, UpdateType.PATCH, {...this.#point, isFavorite: !this.#point.isFavorite });
+  };
+
+  #deleteClickHandler = (point) => {
+    this.#handleDataChange(UserAction.DELETE_POINT, UpdateType.MINOR, point);
   };
 }

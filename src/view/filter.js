@@ -9,12 +9,8 @@ function createFilterTemplate(filters) {
 }
 
 export default class Filter extends ItemsList {
-  constructor({ items, currentFilter }) {
-    super({ items });
-    this._currentFilter = currentFilter;
-  }
 
   get template() {
-    return createFilterTemplate(this._items, this._currentFilter);
+    return createFilterTemplate(this._items);
   }
 }

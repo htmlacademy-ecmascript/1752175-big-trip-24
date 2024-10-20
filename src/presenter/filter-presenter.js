@@ -1,17 +1,21 @@
-import { FilterType } from '../const.js';
-import { render } from '../framework/render.js';
+import { UpdateType } from '../const.js';
+import { remove, render, replace } from '../framework/render.js';
 import { filter } from '../utils.js';
-import Filter from '../view/filter';
+import Filter from '../view/filter.js';
 
 export default class FilterPresenter {
-  #container = null;
+  #container = document.querySelector('.trip-controls__filters');
   #filterComponent = null;
-  #currentFilter = FilterType.EVERYTHING;
+  #currentFilter = null;
   #pointsModel = null;
+  #filterModel = null;
 
-  constructor({ container,pointsModel }) {
-    this.#container = container;
+  constructor({ pointsModel, filterModel }) {
     this.#pointsModel = pointsModel;
+    this.#filterModel = filterModel;
+
+    this.#pointsModel.addObserver(this.#modelEventHandler);
+    this.#filterModel.addObserver(this.#modelEventHandler);
   }
 
   get filters() {
@@ -25,10 +29,31 @@ export default class FilterPresenter {
   }
 
   init() {
+    this.#currentFilter = this.#filterModel.getFilter();
     const filters = this.filters;
 
-    this.#filterComponent = new Filter({ items: filters });
+    const prevFiltersComponent = this.#filterComponent;
+    this.#filterComponent = new Filter({
+      items: filters,
+      onItemChange: this.#filterTypesChangeHandler
+    });
 
-    render(this.#filterComponent, this.#container);
+    if(!prevFiltersComponent) {
+      render(this.#filterComponent, this.#container);
+      return;
+    }
+
+
+    replace(this.#filterComponent, prevFiltersComponent);
+    remove(prevFiltersComponent);
   }
+
+
+  #filterTypesChangeHandler = (filterType) => {
+    this.#filterModel.setFilter(UpdateType.MAJOR, filterType);
+  };
+
+  #modelEventHandler = () => {
+    this.init();
+  };
 }

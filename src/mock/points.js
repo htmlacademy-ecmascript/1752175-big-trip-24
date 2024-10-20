@@ -1,6 +1,4 @@
-import { shufflePoints } from '../utils';
-
-const eventPoints = [
+export const points = [
   {
     'id': '7594223c-c977-4e29-98c1-3e874184ce7b',
     'basePrice': 8325,
@@ -126,5 +124,3 @@ const eventPoints = [
     'type': 'sightseeing'
   }
 ];
-
-export const points = shufflePoints(eventPoints);

@@ -8,12 +8,12 @@ function createEventItemTemplate(type, checked) {
           </div>`;
 }
 
-function createOfferSelectorTemplate(type, title, price, id, checked) {
+function createOfferSelectorTemplate(type, title, price, id, className) {
 
   return `
     <div class="event__offer-selector">
-      <input id="event-offer-${type}-${id}" class="event__offer-checkbox visually-hidden" type="checkbox" name="event-offer-${type}" ${checked ? 'checked' : ''}>
-      <label class="event__offer-label" for="${type}-${id}">
+      <input id="event-offer-${type}-${id}" class="event__offer-checkbox visually-hidden" type="checkbox" name="event-offer-${type}" data-offer-id="${id}" ${className}>
+      <label class="event__offer-label" for="event-offer-${type}-${id}">
         <span class="event__offer-title">${title}</span>
         &plus;&euro;&nbsp;
         <span class="event__offer-price">${price}</span>

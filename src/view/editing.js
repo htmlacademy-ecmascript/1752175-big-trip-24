@@ -1,28 +1,38 @@
 import { createEventItemTemplate, createOfferSelectorTemplate } from './helpers.js';
-import { EVENT_TYPES } from '../const.js';
+import { EditType, EVENT_TYPES, POINT_EMPTY } from '../const.js';
 import { dateValue } from '../utils.js';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import flatpickr from 'flatpickr';
+import he from 'he';
 
 import 'flatpickr/dist/flatpickr.min.css';
 
 function createEditingTemplate(state, allDestinations) {
-  const { basePrice, type, offers, typeOffers, destination, dateTo, dateFrom } = state;
+  const { id,basePrice, type, offers, typeOffers, destination, dateTo, dateFrom } = state;
 
   const createTypeList = EVENT_TYPES
     .map((eventType) => {
-      const checked = eventType === type;
+      const checked = eventType === type ? 'checked' : '';
       return createEventItemTemplate(eventType, checked);
     }).join('');
 
-  const createAllOffers = typeOffers.offers
+  const createAllOffers = (typeOffers?.offers || [])
     .map((offer) => {
-      const checked = offers.includes(offer.id);
+      const checked = offers.includes(offer.id) ? 'checked' : '';
       return createOfferSelectorTemplate(type, offer.title, offer.price, offer.id, checked);
     }).join('');
 
-  const pointDestination = allDestinations.find((item) => item.id === destination);
-  const { name, description, pictures } = pointDestination;
+  const pointDestination = destination
+    ? allDestinations.find((item) => item.id === destination)
+    : '';
+
+  const { name = '', description = '', pictures = [] } = pointDestination || {};
+
+  const createButtonRollUp = id && id !== POINT_EMPTY.id
+    ? `<button class="event__rollup-btn" type="button">
+        <span class="visually-hidden">Open event</span>
+      </button>`
+    : '';
 
   return `<li class="trip-events__item">
             <form class="event event--edit" action="#" method="post">
@@ -65,14 +75,12 @@ function createEditingTemplate(state, allDestinations) {
                     <span class="visually-hidden">Price</span>
                     &euro;
                   </label>
-                  <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${basePrice}">
+                  <input class="event__input  event__input--price" id="event-price-1" type="number" pattern="^[ 0-9]+$" name="event-price" value="${he.encode(String(basePrice))}">
                 </div>
 
                 <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-                <button class="event__reset-btn" type="reset">Delete</button>
-                <button class="event__rollup-btn" type="button">
-                  <span class="visually-hidden">Open event</span>
-                </button>
+                <button class="event__reset-btn" type="reset">${id === POINT_EMPTY.id ? 'Cancel' : 'Delete'}</button>
+                ${createButtonRollUp}
               </header>
               <section class="event__details">
                 ${createAllOffers.length !== 0 ? `
@@ -111,15 +119,19 @@ export default class Editing extends AbstractStatefulView {
   #onSubmitClick = null;
   #datepickerStart = null;
   #datepickerEnd = null;
+  #onDeleteClick = null;
+  #editorMode;
 
   constructor({
-    point,
+    point = POINT_EMPTY,
     typeOffers,
     allOffers,
-    pointDestination,
+    pointDestination = false,
     allDestinations,
     onCloseClick,
-    onSubmitClick
+    onSubmitClick,
+    onDeleteClick,
+    editorMode = EditType.EDITING
   }) {
     super();
     this.#initialPoint = point;
@@ -127,12 +139,15 @@ export default class Editing extends AbstractStatefulView {
     this.#allDestinations = allDestinations;
     this.#onCloseClick = onCloseClick;
     this.#onSubmitClick = onSubmitClick;
-    this._setState(Editing.parsePointToState(point, pointDestination.id, typeOffers));
+    this.#onDeleteClick = onDeleteClick;
+    this.#editorMode = editorMode;
+
+    this._setState(Editing.parsePointToState(point, pointDestination.id, typeOffers, editorMode));
     this._restoreHandlers();
   }
 
   get template() {
-    return createEditingTemplate(this._state, this.#allDestinations);
+    return createEditingTemplate(this._state, this.#allDestinations, this.#editorMode);
   }
 
   reset() {
@@ -153,11 +168,17 @@ export default class Editing extends AbstractStatefulView {
 
 
   _restoreHandlers = () => {
-    this.element.querySelector('.event__rollup-btn')
-      .addEventListener('click', this.#closeClickHandler);
+    if(this.#editorMode === EditType.EDITING) {
+      this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#closeClickHandler);
+      this.element.querySelector('.event__reset-btn').addEventListener('click', this.#deleteClickHandler);
+    }
+
+    if(this.#editorMode === EditType.CREATING) {
+      this.element.querySelector('.event__reset-btn').addEventListener('click', this.#closeClickHandler);
+    }
 
     this.element.querySelector('.event__save-btn')
-      .addEventListener('submit', this.#submitClickHandler);
+      .addEventListener('click', this.#submitClickHandler);
 
     this.element.querySelector('.event__type-group')
       .addEventListener('change', this.#typeChangeHandler);
@@ -167,6 +188,9 @@ export default class Editing extends AbstractStatefulView {
 
     this.element.querySelector('.event__input--price')
       .addEventListener('change', this.#priceChangeHandler);
+
+    this.element.querySelector('.event__available-offers')
+      ?.addEventListener('change', this.#offerSelectHandler);
 
     this.#setDatepickerStart();
     this.#setDatepickerEnd();
@@ -179,7 +203,13 @@ export default class Editing extends AbstractStatefulView {
 
   #submitClickHandler = (evt) => {
     evt.preventDefault();
-    this.#onSubmitClick(Editing.parseStateToPoint(this.#initialPoint));
+    this.#onSubmitClick(Editing.parseStateToPoint(this._state));
+  };
+
+  #deleteClickHandler = (evt) => {
+    evt.preventDefault();
+    this.reset();
+    this.#onDeleteClick(this._state.point);
   };
 
   #typeChangeHandler = (evt) => {
@@ -189,6 +219,15 @@ export default class Editing extends AbstractStatefulView {
     this.updateElement({
       type: targetType,
       typeOffers: typeOffers,
+      offers: [],
+    });
+  };
+
+  #offerSelectHandler = () => {
+    const checkedOffersElement = this.element.querySelectorAll('.event__offer-checkbox:checked');
+    const checkedOffersById = Array.from(checkedOffersElement).map((item) => item.dataset.offerId);
+    this._setState({
+      offers: checkedOffersById
     });
   };
 
@@ -197,7 +236,7 @@ export default class Editing extends AbstractStatefulView {
     const targetDestination = evt.target.value;
     const newDestination = this.#allDestinations.find((item) => item.name === targetDestination);
     this.updateElement({
-      destination: newDestination.id,
+      destination: newDestination ? newDestination.id : '',
     });
   };
 
@@ -213,6 +252,8 @@ export default class Editing extends AbstractStatefulView {
     this._setState({
       dateFrom: userDate,
     });
+
+    this.#setDatepickerEnd();
   };
 
   #dateToChangeHandler = ([userDate]) => {
@@ -256,7 +297,7 @@ export default class Editing extends AbstractStatefulView {
     return {
       ...point,
       destination: pointDestination,
-      typeOffers
+      typeOffers,
     };
   }
 

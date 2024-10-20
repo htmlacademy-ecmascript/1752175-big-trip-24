@@ -1,5 +1,6 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import { dateContent, dateDateTime, formatDuration, timeContent, timeDateTime } from '../utils.js';
+import { capitalizeFirstLetter, dateContent, dateDateTime, formatDuration, timeContent, timeDateTime } from '../utils.js';
+import he from 'he';
 
 function createPointTemplate(point, offers, destination) {
   const { basePrice, type, isFavorite } = point;
@@ -10,7 +11,7 @@ function createPointTemplate(point, offers, destination) {
               <div class="event__type">
                 <img class="event__type-icon" width="42" height="42" src="img/icons/${type}.png" alt="Event type icon">
               </div>
-              <h3 class="event__title">${type} ${destination.name}</h3>
+              <h3 class="event__title">${capitalizeFirstLetter(he.encode(type))} ${he.encode(destination?.name || '')}</h3>
               <div class="event__schedule">
                 <p class="event__time">
                   <time class="event__start-time" datetime="${timeDateTime(point.dateFrom)}">${timeContent(point.dateFrom)}</time>
