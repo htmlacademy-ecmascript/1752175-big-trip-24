@@ -79,4 +79,11 @@ const EmptyListMessage = {
   PAST : 'There are no past events now',
 };
 
-export {EVENT_TYPES, DEFAULT_EVENT_TYPE, POINT_EMPTY, ZERO_LIMIT, FilterType, Mode, SortingType, disabledSortingType, UpdateType, EditType, UserAction, EmptyListMessage};
+const Method = {
+  GET: 'GET',
+  PUT: 'PUT',
+  POST: 'POST',
+  DELETE: 'DELETE',
+};
+
+export {EVENT_TYPES, DEFAULT_EVENT_TYPE, POINT_EMPTY, ZERO_LIMIT, FilterType, Mode, SortingType, disabledSortingType, UpdateType, EditType, UserAction, EmptyListMessage, Method};
