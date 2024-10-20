@@ -17,7 +17,7 @@ const AUTHORIZATION = 'Basic zk394lfqapw';
 
 const pointsApiService = new PointsApiService(END_POINT, AUTHORIZATION);
 const destinationsModel = new DestinationsModel(pointsApiService);
-const offersModel = new OffersModel();
+const offersModel = new OffersModel(pointsApiService);
 const pointsModel = new PointsModel({
   pointsApiService,
   destinationsModel,
@@ -41,7 +41,6 @@ render(new Info(), infoContainer, RenderPosition.AFTERBEGIN);
 newPointButtonPresenter.init({ onButtonClick: eventsPresenter.newPointButtonClickHandler });
 
 pointsModel.init()
-  .then(() => destinationsModel.init())
   .then(() => {
     filterPresenter.init();
     eventsPresenter.init();

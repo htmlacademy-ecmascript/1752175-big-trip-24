@@ -8,11 +8,13 @@ export default class PointsModel extends Observable {
   #pointsApiService = null;
   #pointsAdapterService = new AdapterService();
   #destinationsModel = null;
+  #offersModel = null;
 
-  constructor({ pointsApiService, destinationsModel }) {
+  constructor({ pointsApiService, destinationsModel, offersModel }) {
     super();
     this.#pointsApiService = pointsApiService;
     this.#destinationsModel = destinationsModel;
+    this.#offersModel = offersModel;
   }
 
   getPoints() {
@@ -25,7 +27,7 @@ export default class PointsModel extends Observable {
 
   async init() {
     try {
-      await Promise.all([this.#destinationsModel.init()]);
+      await Promise.all([this.#destinationsModel.init(), this.#offersModel.init()]);
       const points = await this.#pointsApiService.points;
       this.#points = points.map(this.#pointsAdapterService.adaptToClient);
       this._notify(UpdateType.INIT);
