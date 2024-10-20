@@ -36,5 +36,9 @@ const eventsPresenter = new EventsPresenter({
 render(new Info(), infoContainer, RenderPosition.AFTERBEGIN);
 
 newPointButtonPresenter.init({ onButtonClick: eventsPresenter.newPointButtonClickHandler });
-filterPresenter.init();
-eventsPresenter.init();
+
+pointsModel.init()
+  .then(() => {
+    filterPresenter.init();
+    eventsPresenter.init();
+  });
