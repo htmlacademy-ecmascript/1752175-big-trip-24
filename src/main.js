@@ -15,11 +15,14 @@ const eventsContainer = document.querySelector('.trip-events');
 const END_POINT = 'https://24.objects.htmlacademy.pro/big-trip';
 const AUTHORIZATION = 'Basic zk394lfqapw';
 
-const pointsModel = new PointsModel({
-  pointsApiService: new PointsApiService(END_POINT, AUTHORIZATION)
-});
+const pointsApiService = new PointsApiService(END_POINT, AUTHORIZATION);
+const destinationsModel = new DestinationsModel(pointsApiService);
 const offersModel = new OffersModel();
-const destinationsModel = new DestinationsModel();
+const pointsModel = new PointsModel({
+  pointsApiService,
+  destinationsModel,
+  offersModel,
+});
 const filterModel = new FilterModel();
 
 const filterPresenter = new FilterPresenter({ pointsModel, filterModel });
@@ -38,6 +41,7 @@ render(new Info(), infoContainer, RenderPosition.AFTERBEGIN);
 newPointButtonPresenter.init({ onButtonClick: eventsPresenter.newPointButtonClickHandler });
 
 pointsModel.init()
+  .then(() => destinationsModel.init())
   .then(() => {
     filterPresenter.init();
     eventsPresenter.init();
