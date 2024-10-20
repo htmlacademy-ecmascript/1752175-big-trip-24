@@ -7,11 +7,17 @@ import { render, RenderPosition } from './framework/render.js';
 import FilterPresenter from './presenter/filter-presenter.js';
 import FilterModel from './model/filter-model.js';
 import NewPointButtonPresenter from './presenter/new-point-button-presenter.js';
+import PointsApiService from './service/points-api-service.js';
 
 const infoContainer = document.querySelector('.trip-main');
 const eventsContainer = document.querySelector('.trip-events');
 
-const pointsModel = new PointsModel();
+const END_POINT = 'https://24.objects.htmlacademy.pro/big-trip';
+const AUTHORIZATION = 'Basic zk394lfqapw';
+
+const pointsModel = new PointsModel({
+  pointsApiService: new PointsApiService(END_POINT, AUTHORIZATION)
+});
 const offersModel = new OffersModel();
 const destinationsModel = new DestinationsModel();
 const filterModel = new FilterModel();
