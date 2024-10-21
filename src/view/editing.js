@@ -8,7 +8,7 @@ import he from 'he';
 import 'flatpickr/dist/flatpickr.min.css';
 
 function createEditingTemplate(state, allDestinations) {
-  const { id,basePrice, type, offers, typeOffers, destination, dateTo, dateFrom } = state;
+  const { id, basePrice, type, offers, typeOffers, destination, dateTo, dateFrom } = state;
 
   const createTypeList = EVENT_TYPES
     .map((eventType) => {
@@ -28,7 +28,7 @@ function createEditingTemplate(state, allDestinations) {
 
   const { name = '', description = '', pictures = [] } = pointDestination || {};
 
-  const createButtonRollUp = id && id !== POINT_EMPTY.id
+  const createButtonRollUp = id
     ? `<button class="event__rollup-btn" type="button">
         <span class="visually-hidden">Open event</span>
       </button>`
@@ -169,16 +169,20 @@ export default class Editing extends AbstractStatefulView {
 
   _restoreHandlers = () => {
     if(this.#editorMode === EditType.EDITING) {
-      this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#closeClickHandler);
-      this.element.querySelector('.event__reset-btn').addEventListener('click', this.#deleteClickHandler);
+      this.element.querySelector('.event__rollup-btn')
+        .addEventListener('click', this.#closeClickHandler);
+
+      this.element.querySelector('.event__reset-btn')
+        .addEventListener('click', this.#deleteClickHandler);
     }
 
     if(this.#editorMode === EditType.CREATING) {
-      this.element.querySelector('.event__reset-btn').addEventListener('click', this.#closeClickHandler);
+      this.element.querySelector('.event__reset-btn')
+        .addEventListener('click', this.#closeClickHandler);
     }
 
-    this.element.querySelector('.event__save-btn')
-      .addEventListener('click', this.#submitClickHandler);
+    this.element.querySelector('.event.event--edit')
+      .addEventListener('submit', this.#submitClickHandler);
 
     this.element.querySelector('.event__type-group')
       .addEventListener('change', this.#typeChangeHandler);
@@ -203,13 +207,27 @@ export default class Editing extends AbstractStatefulView {
 
   #submitClickHandler = (evt) => {
     evt.preventDefault();
+
+    const { basePrice, dateFrom, dateTo, destination } = this._state;
+
+    if (basePrice < 1) {
+      return;
+    }
+
+    if (new Date(dateFrom) >= new Date(dateTo)) {
+      return;
+    }
+
+    if (!destination) {
+      return;
+    }
+
     this.#onSubmitClick(Editing.parseStateToPoint(this._state));
   };
 
   #deleteClickHandler = (evt) => {
     evt.preventDefault();
-    this.reset();
-    this.#onDeleteClick(this._state.point);
+    this.#onDeleteClick(this._state);
   };
 
   #typeChangeHandler = (evt) => {
@@ -242,7 +260,7 @@ export default class Editing extends AbstractStatefulView {
 
   #priceChangeHandler = (evt) => {
     evt.preventDefault();
-    const newPrice = evt.target.value;
+    const newPrice = evt.target.valueAsNumber;
     this._setState({
       basePrice: newPrice
     });

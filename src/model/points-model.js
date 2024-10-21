@@ -28,8 +28,10 @@ export default class PointsModel extends Observable {
   async init() {
     try {
       await Promise.all([this.#destinationsModel.init(), this.#offersModel.init()]);
+
       const points = await this.#pointsApiService.points;
       this.#points = points.map(this.#pointsAdapterService.adaptToClient);
+
       this._notify(UpdateType.INIT);
     } catch (err) {
       this.#points = [];
@@ -42,27 +44,25 @@ export default class PointsModel extends Observable {
 
     if (index !== -1) {
       try {
-        const response = await this.#pointsApiService.updatePoint(updatedPoint);
+        const { typeOffers, ...pointData } = updatedPoint;
+
+        const response = await this.#pointsApiService.updatePoint(pointData);
         const updatePoint = this.#pointsAdapterService.adaptToClient(response);
 
-        this.#points = [
-          ...this.#points.slice(0, index),
-          updatePoint,
-          ...this.#points.slice(index + 1),
-        ];
+        this.#points[index] = updatePoint;
 
         this._notify(updateType, updatePoint);
       } catch (err) {
         throw new Error('Can\'t update point');
       }
     }
-
-    this._notify(updateType, updatedPoint);
   }
 
   async addPoint(updateType, updatedPoint) {
     try {
-      const response = await this.#pointsApiService.addPoint(updatedPoint);
+      const { id, typeOffers, ...pointData } = updatedPoint;
+
+      const response = await this.#pointsApiService.addPoint(pointData);
       const newPoint = this.#pointsAdapterService.adaptToClient(response);
 
       this.#points = [
@@ -83,11 +83,7 @@ export default class PointsModel extends Observable {
       try {
         await this.#pointsApiService.deletePoint(updatedPoint);
 
-        this.#points = [
-          ...this.#points.slice(0, index),
-          ...this.#points.slice(index + 1),
-        ];
-
+        this.#points.splice(index, 1);
         this._notify(updateType);
       } catch (err) {
         throw new Error('Can\'t delete point');

@@ -15,7 +15,6 @@ const EVENT_TYPES = [
 const DEFAULT_EVENT_TYPE = 'flight';
 
 const POINT_EMPTY = {
-  id: '0',
   basePrice: 0,
   dateFrom: dayjs(new Date()).toISOString(),
   dateTo: dayjs(new Date()).toISOString(),

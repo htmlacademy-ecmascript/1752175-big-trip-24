@@ -1,6 +1,5 @@
 import { EditType, POINT_EMPTY, UpdateType, UserAction } from '../const';
 import { remove, render, RenderPosition } from '../framework/render';
-import { generateId } from '../utils';
 import Editing from '../view/editing';
 
 export default class NewPointPresenter {
@@ -53,7 +52,7 @@ export default class NewPointPresenter {
     this.#handleDataChange (
       UserAction.CREATE_POINT,
       UpdateType.MINOR,
-      {...point, id: generateId()},
+      point
     );
     this.destroy({isCanceled: false});
   };
