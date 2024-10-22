@@ -44,7 +44,9 @@ export default class PointsModel extends Observable {
 
     if (index !== -1) {
       try {
-        const { typeOffers, ...pointData } = updatedPoint;
+        const pointData = Object.fromEntries(
+          Object.entries(updatedPoint).filter(([key]) => !['typeOffers'].includes(key))
+        );
 
         const response = await this.#pointsApiService.updatePoint(pointData);
         const updatePoint = this.#pointsAdapterService.adaptToClient(response);
@@ -60,7 +62,9 @@ export default class PointsModel extends Observable {
 
   async addPoint(updateType, updatedPoint) {
     try {
-      const { id, typeOffers, ...pointData } = updatedPoint;
+      const pointData = Object.fromEntries(
+        Object.entries(updatedPoint).filter(([key]) => !['typeOffers', 'id'].includes(key))
+      );
 
       const response = await this.#pointsApiService.addPoint(pointData);
       const newPoint = this.#pointsAdapterService.adaptToClient(response);
