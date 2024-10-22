@@ -58,6 +58,7 @@ const UpdateType = {
   PATCH: 'PATCH',
   MINOR: 'MINOR',
   MAJOR: 'MAJOR',
+  INIT: 'INIT',
 };
 
 const EditType = {
@@ -72,10 +73,12 @@ const UserAction = {
 };
 
 const EmptyListMessage = {
-  EVERYTHING : 'Click New Event to create your first point',
-  FUTURE : 'There are no future events now',
-  PRESENT : 'There are no present events now',
-  PAST : 'There are no past events now',
+  EVERYTHING: 'Click New Event to create your first point',
+  FUTURE: 'There are no future events now',
+  PRESENT: 'There are no present events now',
+  PAST: 'There are no past events now',
+  LOADING: 'Loading...',
+  LOADING_ERROR: 'Failed to load latest route information',
 };
 
 const Method = {
