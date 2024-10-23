@@ -8,11 +8,11 @@ import FilterPresenter from './presenter/filter-presenter.js';
 import FilterModel from './model/filter-model.js';
 import NewPointButtonPresenter from './presenter/new-point-button-presenter.js';
 import PointsApiService from './service/points-api-service.js';
+import { END_POINT } from './const.js';
 
 const infoContainer = document.querySelector('.trip-main');
 const eventsContainer = document.querySelector('.trip-events');
 
-const END_POINT = 'https://24.objects.htmlacademy.pro/big-trip';
 const AUTHORIZATION = 'Basic zk394lfqapw';
 
 const pointsApiService = new PointsApiService(END_POINT, AUTHORIZATION);

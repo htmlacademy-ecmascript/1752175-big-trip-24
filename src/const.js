@@ -26,6 +26,8 @@ const POINT_EMPTY = {
 
 const ZERO_LIMIT = 10;
 
+const END_POINT = 'https://24.objects.htmlacademy.pro/big-trip';
+
 const FilterType = {
   EVERYTHING: 'everything',
   FUTURE: 'future',
@@ -88,4 +90,4 @@ const Method = {
   DELETE: 'DELETE',
 };
 
-export {EVENT_TYPES, DEFAULT_EVENT_TYPE, POINT_EMPTY, ZERO_LIMIT, FilterType, Mode, SortingType, disabledSortingType, UpdateType, EditType, UserAction, EmptyListMessage, Method};
+export {EVENT_TYPES, DEFAULT_EVENT_TYPE, POINT_EMPTY, ZERO_LIMIT, END_POINT, FilterType, Mode, SortingType, disabledSortingType, UpdateType, EditType, UserAction, EmptyListMessage, Method};
