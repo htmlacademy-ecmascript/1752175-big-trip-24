@@ -83,8 +83,6 @@ const filter = {
   [FilterType.PAST]: (points) => points.filter(isPastPoint),
 };
 
-const updatePoint = (points, updatedPoint) => points.map((point) => (point.id === updatedPoint.id ? updatedPoint : point));
-
 function sortPointsByDay(points) {
   return points.toSorted((a, b) => dayjs(a.dateFrom).diff(dayjs(b.dateFrom)));
 }
@@ -99,14 +97,6 @@ function sortPointsByTime(points) {
 
 function sortPointsByPrice(points) {
   return points.toSorted((a, b) => b.basePrice - a.basePrice);
-}
-
-function generateId() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const random = Math.random() * 16 | 0;
-    const value = c === 'x' ? random : (random & 0x3 | 0x8);
-    return value.toString(16);
-  });
 }
 
 const sorting = {
@@ -126,4 +116,4 @@ const isMinorChange = (pointA, pointB) =>
   || pointA.dateTo !== pointB.dateTo
   || pointA.basePrice !== pointB.basePrice;
 
-export {capitalizeFirstLetter, shufflePoints, dateValue, dateDateTime, dateContent, timeDateTime, timeContent, formatDuration, isFuturePoint, isPresentPoint, isPastPoint, filter, updatePoint, sorting, isMinorChange, generateId};
+export {capitalizeFirstLetter, shufflePoints, dateValue, dateDateTime, dateContent, timeDateTime, timeContent, formatDuration, isFuturePoint, isPresentPoint, isPastPoint, filter, sorting, isMinorChange};

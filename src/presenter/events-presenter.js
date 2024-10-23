@@ -21,6 +21,9 @@ export default class EventsPresenter {
   #newPointPresenter = null;
   #newPointButtonPresenter = null;
   #isCreating = false;
+  #isLoading = true;
+  #loadingComponent = new EmptyList({ filterType: 'LOADING' });
+  #loadingErrorComponent = new EmptyList({ filterType: 'LOADING_ERROR' });
 
   constructor({ container, pointsModel, offersModel, destinationsModel, filterModel, newPointButtonPresenter }) {
     this.#container = container;
@@ -48,20 +51,47 @@ export default class EventsPresenter {
     return sorting[this.#currentSortingType]([...filteredPoints]);
   }
 
+  get error() {
+    return this.#pointsModel.error;
+  }
+
   init() {
     this.#renderEvents();
   }
 
   #renderEvents() {
+    if (this.error) {
+      this.#newPointButtonPresenter.disableButton();
+      this.#renderLoadingError();
+      return;
+    }
+
+    if (this.#isLoading) {
+      this.#newPointButtonPresenter.disableButton();
+      this.#renderLoading();
+      return;
+    }
+
     if (this.points.length === 0 && !this.#isCreating) {
+      this.#newPointButtonPresenter.enableButton();
       this.#renderEmptyList();
       return;
     }
 
+    this.#newPointButtonPresenter.enableButton();
     this.#renderSort();
     this.#renderList();
     this.#renderPoints();
   }
+
+  #renderLoading() {
+    render(this.#loadingComponent, this.#container);
+  }
+
+  #renderLoadingError() {
+    render(this.#loadingErrorComponent, this.#container);
+  }
+
 
   #renderList() {
     render(this.#eventsList, this.#container);
@@ -127,7 +157,7 @@ export default class EventsPresenter {
 
   #clearEvents = ({resetSortType = false} = {}) => {
     this.#clearPoints();
-    this.#sortingPresenter.destroy();
+    this.#sortingPresenter?.destroy();
     remove(this.#emptyListComponent);
 
     if(resetSortType) {
@@ -136,17 +166,23 @@ export default class EventsPresenter {
   };
 
   #modelEventHandler = (updateType, data) => {
-    if(updateType === UpdateType.PATCH) {
+    if (updateType === UpdateType.PATCH) {
       this.#pointsPresenter?.get(data.id)?.init(data);
     }
 
-    if(updateType === UpdateType.MINOR) {
+    if (updateType === UpdateType.MINOR) {
       this.#clearEvents();
       this.#renderEvents();
     }
 
-    if(updateType === UpdateType.MAJOR) {
-      this.#clearEvents({resetSortType: true});
+    if (updateType === UpdateType.MAJOR) {
+      this.#clearEvents({ resetSortType: true });
+      this.#renderEvents();
+    }
+
+    if (updateType === UpdateType.INIT) {
+      this.#isLoading = false;
+      remove(this.#loadingComponent);
       this.#renderEvents();
     }
   };

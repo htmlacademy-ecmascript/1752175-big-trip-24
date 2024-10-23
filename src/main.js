@@ -7,13 +7,22 @@ import { render, RenderPosition } from './framework/render.js';
 import FilterPresenter from './presenter/filter-presenter.js';
 import FilterModel from './model/filter-model.js';
 import NewPointButtonPresenter from './presenter/new-point-button-presenter.js';
+import PointsApiService from './service/points-api-service.js';
+import { END_POINT } from './const.js';
 
 const infoContainer = document.querySelector('.trip-main');
 const eventsContainer = document.querySelector('.trip-events');
 
-const pointsModel = new PointsModel();
-const offersModel = new OffersModel();
-const destinationsModel = new DestinationsModel();
+const AUTHORIZATION = 'Basic zk394lfqapw';
+
+const pointsApiService = new PointsApiService(END_POINT, AUTHORIZATION);
+const destinationsModel = new DestinationsModel(pointsApiService);
+const offersModel = new OffersModel(pointsApiService);
+const pointsModel = new PointsModel({
+  pointsApiService,
+  destinationsModel,
+  offersModel,
+});
 const filterModel = new FilterModel();
 
 const filterPresenter = new FilterPresenter({ pointsModel, filterModel });
@@ -32,3 +41,4 @@ render(new Info(), infoContainer, RenderPosition.AFTERBEGIN);
 newPointButtonPresenter.init({ onButtonClick: eventsPresenter.newPointButtonClickHandler });
 filterPresenter.init();
 eventsPresenter.init();
+pointsModel.init();

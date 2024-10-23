@@ -15,7 +15,6 @@ const EVENT_TYPES = [
 const DEFAULT_EVENT_TYPE = 'flight';
 
 const POINT_EMPTY = {
-  id: '0',
   basePrice: 0,
   dateFrom: dayjs(new Date()).toISOString(),
   dateTo: dayjs(new Date()).toISOString(),
@@ -26,6 +25,8 @@ const POINT_EMPTY = {
 };
 
 const ZERO_LIMIT = 10;
+
+const END_POINT = 'https://24.objects.htmlacademy.pro/big-trip';
 
 const FilterType = {
   EVERYTHING: 'everything',
@@ -59,6 +60,7 @@ const UpdateType = {
   PATCH: 'PATCH',
   MINOR: 'MINOR',
   MAJOR: 'MAJOR',
+  INIT: 'INIT',
 };
 
 const EditType = {
@@ -73,10 +75,19 @@ const UserAction = {
 };
 
 const EmptyListMessage = {
-  EVERYTHING : 'Click New Event to create your first point',
-  FUTURE : 'There are no future events now',
-  PRESENT : 'There are no present events now',
-  PAST : 'There are no past events now',
+  EVERYTHING: 'Click New Event to create your first point',
+  FUTURE: 'There are no future events now',
+  PRESENT: 'There are no present events now',
+  PAST: 'There are no past events now',
+  LOADING: 'Loading...',
+  LOADING_ERROR: 'Failed to load latest route information',
 };
 
-export {EVENT_TYPES, DEFAULT_EVENT_TYPE, POINT_EMPTY, ZERO_LIMIT, FilterType, Mode, SortingType, disabledSortingType, UpdateType, EditType, UserAction, EmptyListMessage};
+const Method = {
+  GET: 'GET',
+  PUT: 'PUT',
+  POST: 'POST',
+  DELETE: 'DELETE',
+};
+
+export {EVENT_TYPES, DEFAULT_EVENT_TYPE, POINT_EMPTY, ZERO_LIMIT, END_POINT, FilterType, Mode, SortingType, disabledSortingType, UpdateType, EditType, UserAction, EmptyListMessage, Method};

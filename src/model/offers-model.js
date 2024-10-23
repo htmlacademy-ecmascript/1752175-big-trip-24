@@ -1,9 +1,21 @@
-import { offers } from '../mock/offers';
+import AdapterService from '../service/adapter-service';
 
 export default class OffersModel {
-  #offers = offers;
+  #offers = [];
+  #pointsApiService = null;
+  #pointsAdapterService = new AdapterService();
+
+  constructor(pointsApiService) {
+    this.#pointsApiService = pointsApiService;
+  }
 
   getOffers() {
+    return this.#offers;
+  }
+
+  async init() {
+    const offers = await this.#pointsApiService.offers;
+    this.#offers = offers.map(this.#pointsAdapterService.adaptToClient);
     return this.#offers;
   }
 
