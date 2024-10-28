@@ -1,14 +1,13 @@
-import Info from './view/info.js';
 import EventsPresenter from './presenter/events-presenter.js';
 import PointsModel from './model/points-model.js';
 import OffersModel from './model/offers-model.js';
 import DestinationsModel from './model/destinations-model.js';
-import { render, RenderPosition } from './framework/render.js';
 import FilterPresenter from './presenter/filter-presenter.js';
 import FilterModel from './model/filter-model.js';
 import NewPointButtonPresenter from './presenter/new-point-button-presenter.js';
 import PointsApiService from './service/points-api-service.js';
 import { END_POINT } from './const.js';
+import InfoPresenter from './presenter/info-presenter.js';
 
 const infoContainer = document.querySelector('.trip-main');
 const eventsContainer = document.querySelector('.trip-events');
@@ -35,10 +34,10 @@ const eventsPresenter = new EventsPresenter({
   filterModel,
   newPointButtonPresenter: newPointButtonPresenter
 });
-
-render(new Info(), infoContainer, RenderPosition.AFTERBEGIN);
+const infoPresenter = new InfoPresenter({ pointsModel, destinationsModel, offersModel, container: infoContainer });
 
 newPointButtonPresenter.init({ onButtonClick: eventsPresenter.newPointButtonClickHandler });
 filterPresenter.init();
 eventsPresenter.init();
 pointsModel.init();
+infoPresenter.init();

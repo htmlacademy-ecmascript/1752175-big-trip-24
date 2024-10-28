@@ -116,4 +116,64 @@ const isMinorChange = (pointA, pointB) =>
   || pointA.dateTo !== pointB.dateTo
   || pointA.basePrice !== pointB.basePrice;
 
-export {capitalizeFirstLetter, shufflePoints, dateValue, dateDateTime, dateContent, timeDateTime, timeContent, formatDuration, isFuturePoint, isPresentPoint, isPastPoint, filter, sorting, isMinorChange};
+function generateRoute(points = [], destinations = []) {
+  const sortingDestinations = sorting[SortingType.DAY]([...points]);
+
+  const destinationNames = sortingDestinations.map((point) => {
+    const dest = destinations.find((destination) => destination.id === point.destination);
+    return dest ? dest.name : '';
+  });
+
+  if (destinationNames.length === 0) {
+    return '';
+  }
+  if (destinationNames.length === 1) {
+    return destinationNames[0];
+  }
+  if (destinationNames.length === 2) {
+    return `${destinationNames[0]} &mdash; ${destinationNames[1]}`;
+  }
+  if (destinationNames.length === 3) {
+    return `${destinationNames[0]} &mdash; ${destinationNames[1]} &mdash; ${destinationNames[2]}}`;
+  }
+  return `${destinationNames[0]} &mdash; ... &mdash; ${destinationNames[destinationNames.length - 1]}`;
+
+}
+
+function getStartDate(points) {
+  if (points.length === 0) {
+    return null;
+  }
+
+  return points.reduce((min, point) => {
+    const dateFrom = dayjs(point.dateFrom);
+    return dateFrom.isBefore(min) ? dateFrom : min;
+  }, dayjs(points[0].dateFrom));
+}
+
+function getEndDate(points) {
+  if (points.length === 0) {
+    return null;
+  }
+
+  return points.reduce((max, point) => {
+    const dateTo = dayjs(point.dateTo);
+    return dateTo.isAfter(max) ? dateTo : max;
+  }, dayjs(points[0].dateTo));
+}
+
+function getCheckedOffers(offers, type) {
+  const offer = offers.find((item) => item.type === type);
+  return offer ? offer.offers : [];
+}
+
+function getOffersCost(offerIDs = [], offers = []) {
+  const offerMap = Object.fromEntries(offers.map((offer) => [offer.id, offer.price]));
+  return offerIDs.reduce((totalCost, id) => totalCost + (offerMap[id] || 0), 0);
+}
+
+function getTotalCost(points, offers) {
+  return points.reduce((total, point) => total + point.basePrice + getOffersCost(point.offers, getCheckedOffers(offers, point.type)), 0);
+}
+
+export {capitalizeFirstLetter, shufflePoints, dateValue, dateDateTime, dateContent, timeDateTime, timeContent, formatDuration, isFuturePoint, isPresentPoint, isPastPoint, filter, sorting, isMinorChange, generateRoute, getStartDate, getEndDate, getTotalCost};
